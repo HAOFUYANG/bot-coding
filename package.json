@@ -1,0 +1,37 @@
+{
+  "name": "auto-generator",
+  "displayName": "Auto Generator",
+  "description": "自动生成&自动采纳",
+  "version": "0.0.2",
+  "publisher": "HaoFuYang",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:autoInlineGenerator.start",
+    "onCommand:autoInlineGenerator.stop"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "autoInlineGenerator.start",
+        "title": "Start Auto Inline Generator"
+      },
+      {
+        "command": "autoInlineGenerator.stop",
+        "title": "Stop Auto Inline Generator"
+      }
+    ]
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "vsce": "^2.15.0"
+  }
+}
