@@ -1,8 +1,8 @@
 {
-  "name": "auto-generator",
-  "displayName": "Auto Generator",
+  "name": "bot-coder",
+  "displayName": "A wise coding-bot, can auto write code for you, accept inline suggestions",
   "description": "自动生成&自动采纳",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "publisher": "HaoFuYang",
   "icon": "icon.png",
   "engines": {
@@ -12,19 +12,19 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:autoInlineGenerator.start",
-    "onCommand:autoInlineGenerator.stop"
+    "onCommand:coding.start",
+    "onCommand:coding.stop"
   ],
   "main": "./src/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "autoInlineGenerator.start",
-        "title": "Start Auto Inline Generator"
+        "command": "coding.start",
+        "title": "Start Coding"
       },
       {
-        "command": "autoInlineGenerator.stop",
-        "title": "Stop Auto Inline Generator"
+        "command": "coding.stop",
+        "title": "Stop Coding"
       },
       {
         "command": "autoInlineGenerator.tab",
