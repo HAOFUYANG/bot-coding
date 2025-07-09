@@ -11,40 +11,25 @@ let maxGeneratedLines = 1000;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 /**
  * @description 触发内联建议并采纳。
  * @returns {Promise<void>}
  */
 async function triggerAndAcceptInline() {
   if (!isGenerating || !targetEditor) return;
-  if (targetEditor.document.lineCount >= maxGeneratedLines) {
-    outputChannel.appendLine(`code generation completed, max line reached.`);
-    isGenerating = false;
-    stopInlineLoop();
-    vscode.window.showInformationMessage(
-      `已达到最大行数 ${maxGeneratedLines}，自动停止生成。`
-    );
-    targetEditor.document.save().then(() => {
-      outputChannel.appendLine("save success");
-    });
-    return;
-  }
   try {
     if (!hasInsertedTrigger) {
       // 1.插入触发词------>第一次插入触发词
       await targetEditor.edit((editBuilder) => {
         editBuilder.insert(targetEditor.selection.active, "const");
       });
-      outputChannel.appendLine(
-        "[triggerAndAcceptInline] first trigger console success"
-      );
+      outputChannel.appendLine("first trigger console success");
       hasInsertedTrigger = true;
     }
     // 2.触发---->inline suggestion
     await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
-    outputChannel.appendLine("[triggerAndAcceptInline] 触发 inline suggestion");
-    await delay(1000);
+    outputChannel.appendLine("trigger inline suggestion");
+    await delay(2000);
     // 打印命令(帮助-打开开发者模式就可以看到console)
     // const commands = await vscode.commands.getCommands(true);
     // const inline = commands.filter((cmd) =>
@@ -61,9 +46,14 @@ async function triggerAndAcceptInline() {
     });
     // 5.光标移动然后换行----->准备下次 inline suggestion
     await moveCursorToEndAndInsertNewLine(targetEditor);
+    // 6.空行检测----->如果存在空行，主动做一次触发内联推荐
+    if (isLastLinesEmpty(targetEditor, 2)) {
+      outputChannel.appendLine("insert words for empty line to ");
+      await insertTriggerWord(targetEditor);
+    }
     // await delay(1000);
   } catch (e) {
-    outputChannel.appendLine(`[triggerAndAcceptInline] 错误: ${e.message}`);
+    outputChannel.appendLine(`[triggerAndAcceptInline] error: ${e.message}`);
   }
 }
 
@@ -72,8 +62,9 @@ async function triggerAndAcceptInline() {
  * @param {vscode.TextEditor} editor
  */
 async function moveCursorToEndAndInsertNewLine(editor) {
-  if (!editor) return;
-
+  if (!editor) {
+    return;
+  }
   const lastLine = editor.document.lineCount - 1;
   const lastLineLength = editor.document.lineAt(lastLine).text.length;
   const endPosition = new vscode.Position(lastLine, lastLineLength);
@@ -86,9 +77,55 @@ async function moveCursorToEndAndInsertNewLine(editor) {
     editBuilder.insert(endPosition, "\n");
   });
 }
+/**
+ * @description 检查文件最后几行是否都是空行
+ * @param {vscode.TextEditor} editor
+ * @param {number} linesCount
+ * @returns {boolean}
+ */
+function isLastLinesEmpty(editor, linesCount = 3) {
+  const doc = editor.document;
+  const totalLines = doc.lineCount;
+  let emptyLines = 0;
+  for (let i = totalLines - 1; i >= Math.max(0, totalLines - linesCount); i--) {
+    const text = doc.lineAt(i).text.trim();
+    if (text === "") {
+      emptyLines++;
+    }
+  }
+  return emptyLines === linesCount;
+}
+
+/**
+ * @description 在最后插入触发词（例如 const），用于重新触发 inline suggest
+ * @param {vscode.TextEditor} editor
+ */
+async function insertTriggerWord(editor) {
+  const lastLine = editor.document.lineCount - 1;
+  const lastLineLength = editor.document.lineAt(lastLine).text.length;
+  const endPosition = new vscode.Position(lastLine, lastLineLength);
+  await editor.edit((editBuilder) => {
+    editBuilder.insert(endPosition, "\nconst");
+  });
+}
+
 function startInlineLoop(minDelay = 1000, maxDelay = 2000) {
+  //
+  if (targetEditor.document.lineCount >= maxGeneratedLines) {
+    outputChannel.appendLine(`code generation completed, max line reached.`);
+    isGenerating = false;
+    stopInlineLoop();
+    vscode.window.showInformationMessage(
+      `code generation completed, stop coding`
+    );
+    targetEditor.document.save().then(() => {
+      outputChannel.appendLine("save success");
+    });
+    return;
+  }
   async function loop() {
     if (!isGenerating) return;
+
     await triggerAndAcceptInline();
     const delayMs =
       Math.floor(Math.random() * (maxDelay - minDelay)) + minDelay;

@@ -1,8 +1,8 @@
 {
   "name": "bot-coder",
   "displayName": "A wise coding-bot, can auto write code for you, accept inline suggestions",
-  "description": "自动生成&自动采纳",
-  "version": "1.0.0",
+  "description": "auto generate && auto accept",
+  "version": "1.1.0",
   "publisher": "HaoFuYang",
   "icon": "icon.png",
   "engines": {
