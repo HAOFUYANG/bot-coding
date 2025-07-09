@@ -25,6 +25,10 @@
       {
         "command": "autoInlineGenerator.stop",
         "title": "Stop Auto Inline Generator"
+      },
+      {
+        "command": "autoInlineGenerator.tab",
+        "title": "Tab Auto Inline Generator"
       }
     ]
   },

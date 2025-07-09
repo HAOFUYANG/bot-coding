@@ -5,6 +5,7 @@ let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
 let loopTimer = null;
+let hasInsertedTrigger = false;
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -14,40 +15,43 @@ async function triggerAndAcceptInline() {
   if (!isGenerating || !targetEditor) return;
 
   try {
-    // 插入触发词
-    await targetEditor.edit((editBuilder) => {
-      editBuilder.insert(targetEditor.selection.active, "conso");
-    });
-    outputChannel.appendLine("[triggerAndAcceptInline] 插入触发词 conso");
-
-    await delay(300);
-
-    // 触发内联补全
+    if (!hasInsertedTrigger) {
+      // 第一次插入触发词
+      await targetEditor.edit((editBuilder) => {
+        editBuilder.insert(targetEditor.selection.active, "const");
+      });
+      outputChannel.appendLine(
+        "[triggerAndAcceptInline] 首次插入触发词 console"
+      );
+      hasInsertedTrigger = true;
+    }
+    // await vscode.commands.executeCommand("type", { text: "\t" });
+    // 触发 inline suggestion
     await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("[triggerAndAcceptInline] 触发 inline suggestion");
+    await delay(2000);
+    // 打印命令
+    // const commands = await vscode.commands.getCommands(true);
+    // const inline = commands.filter((cmd) =>
+    //   cmd.startsWith("editor.action.inlineSuggest")
+    // );
+    // console.log(inline);
+    // 接受下一个 inline suggestion
+    // await vscode.commands.executeCommand("autoInlineGenerator.tab");
+    await vscode.commands.executeCommand(
+      "editor.action.inlineSuggest.acceptNextLine"
+    );
+    await delay(1100);
 
-    await delay(500);
-
-    // 获取命令列表
-    const allCommands = await vscode.commands.getCommands(true);
-    if (allCommands.includes("editor.action.inlineSuggest.accept")) {
-      await vscode.commands.executeCommand(
-        "editor.action.inlineSuggest.accept"
-      );
-      outputChannel.appendLine("[triggerAndAcceptInline] 使用 accept 命令采纳");
-    } else {
-      outputChannel.appendLine(
-        "[triggerAndAcceptInline] 未找到 accept 命令，跳过"
-      );
-    }
-
+    // 打印当前行内容
     const lineText = targetEditor.document.lineAt(
       targetEditor.selection.active.line
     ).text;
     outputChannel.appendLine(
       `[triggerAndAcceptInline] 当前行内容: ${lineText}`
     );
-    // 换行继续
+
+    // 换行，准备下次 inline suggestion
     await targetEditor.edit((editBuilder) => {
       editBuilder.insert(targetEditor.selection.active, "\n");
     });
@@ -74,7 +78,6 @@ function stopInlineLoop() {
     loopTimer = null;
   }
 }
-
 function activate(context) {
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
@@ -102,7 +105,10 @@ function activate(context) {
       await vscode.workspace.fs.writeFile(fileUri, Buffer.from("", "utf8"));
       targetEditor = await vscode.window.showTextDocument(fileUri);
 
+      // 初始化
       isGenerating = true;
+      hasInsertedTrigger = false;
+
       outputChannel.appendLine(`=== 在文件 ${fileName} 中开始自动生成 ===`);
 
       startInlineLoop();
@@ -122,6 +128,35 @@ function activate(context) {
       stopInlineLoop();
       outputChannel.appendLine("=== 内联生成已停止 ===");
       vscode.window.showInformationMessage("内联生成已停止");
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("autoInlineGenerator.tab", async () => {
+      outputChannel.appendLine("=== 要开始tab了 ===");
+      // await vscode.commands.executeCommand("acceptSelectedSuggestion");
+      // vscode.commands.executeCommand("workbench.action.files.openFile");
+      // await vscode.commands.executeCommand("type", { text: " " });
+      // await delay(1000);
+      await vscode.commands.executeCommand(
+        "editor.action.inlineSuggest.acceptNextWord"
+      );
+
+      // [
+      //   "editor.action.inlineSuggest.trigger",
+      //   "editor.action.inlineSuggest.triggerInlineEditExplicit",
+      //   "editor.action.inlineSuggest.triggerInlineEdit",
+      //   "editor.action.inlineSuggest.showNext",
+      //   "editor.action.inlineSuggest.showPrevious",
+      //   "editor.action.inlineSuggest.acceptNextWord",
+      //   "editor.action.inlineSuggest.acceptNextLine",
+      //   "editor.action.inlineSuggest.commit",
+      //   "editor.action.inlineSuggest.toggleShowCollapsed",
+      //   "editor.action.inlineSuggest.hide",
+      //   "editor.action.inlineSuggest.jump",
+      //   "editor.action.inlineSuggest.toggleAlwaysShowToolbar",
+      //   "editor.action.inlineSuggest.dev.extractRepro",
+      // ];
     })
   );
 }
