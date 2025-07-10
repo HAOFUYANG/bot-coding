@@ -12,12 +12,35 @@
     "Other"
   ],
   "activationEvents": [
+    "onView:coder-view",
     "onCommand:coding.start",
     "onCommand:coding.stop"
   ],
   "main": "./src/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "coder-view",
+          "title": "coderView",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "coder-view": [
+        {
+          "type": "webview",
+          "id": "coder-view",
+          "name": "Coder View"
+        }
+      ]
+    },
     "commands": [
+      {
+        "command": "panelDetails.show",
+        "title": "Show Panel Details"
+      },
       {
         "command": "coding.start",
         "title": "Start Coding"
@@ -31,11 +54,5 @@
         "title": "Tab Auto Inline Generator"
       }
     ]
-  },
-  "scripts": {
-    "package": "vsce package"
-  },
-  "devDependencies": {
-    "vsce": "^2.15.0"
   }
 }

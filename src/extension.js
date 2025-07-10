@@ -7,6 +7,8 @@ let outputChannel = null;
 let loopTimer = null;
 let hasInsertedTrigger = false;
 let maxGeneratedLines = 1000;
+let acceptedContentDetails = []; //记录采纳的详细信息
+let acceptedCount = 0; // 记录采纳的次数
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -16,7 +18,22 @@ function delay(ms) {
  * @returns {Promise<void>}
  */
 async function triggerAndAcceptInline() {
-  if (!isGenerating || !targetEditor) return;
+  if (!isGenerating || !targetEditor) {
+    return;
+  }
+  //最大行数限制检测
+  if (targetEditor.document.lineCount >= maxGeneratedLines) {
+    outputChannel.appendLine(`code generation completed, max line reached.`);
+    isGenerating = false;
+    stopInlineLoop();
+    vscode.window.showInformationMessage(
+      `code generation completed, stop coding`
+    );
+    targetEditor.document.save().then(() => {
+      outputChannel.appendLine("save success");
+    });
+    return;
+  }
   try {
     if (!hasInsertedTrigger) {
       // 1.插入触发词------>第一次插入触发词
@@ -26,7 +43,8 @@ async function triggerAndAcceptInline() {
       outputChannel.appendLine("first trigger console success");
       hasInsertedTrigger = true;
     }
-    // 2.触发---->inline suggestion
+    // 2.触发----------->inline suggestion
+    const prevLineCount = targetEditor.document.lineCount;
     await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("trigger inline suggestion");
     await delay(2000);
@@ -36,18 +54,42 @@ async function triggerAndAcceptInline() {
     //   cmd.startsWith("editor.action.inlineSuggest")
     // );
     // console.log(inline);
-    // 3.采纳----> inline suggest
+    // 3.采纳---------> inline suggest
     await vscode.commands.executeCommand("editor.action.inlineSuggest.commit");
-    //4.保存---->执行一次save
+    //4.保存----------->执行一次save
     await targetEditor.document.save().then(() => {
       outputChannel.appendLine(
         "accept inline suggestion success and save once"
       );
     });
-    // 5.光标移动然后换行----->准备下次 inline suggestion
+    //5.获取采纳的内容--------->通过行判断获取当前被采纳内容
+    const newLineCount = targetEditor.document.lineCount;
+    let addedContent = "";
+    // 如果有新增行，就把这些行全部拼接起来
+    if (newLineCount > prevLineCount) {
+      for (let i = prevLineCount - 1; i < newLineCount - 1; i++) {
+        addedContent += targetEditor.document.lineAt(i).text + "\n";
+      }
+    } else {
+      // 如果没有增加行（可能是末行直接插入），就拿倒数第二行（因为你后面还插了换行）
+      const lastLineNumber = newLineCount - 2;
+      if (lastLineNumber >= 0) {
+        addedContent = targetEditor.document.lineAt(lastLineNumber).text;
+      }
+    }
+    console.log("addedContent :>> ", addedContent);
+    acceptedCount++;
+    acceptedContentDetails.push({
+      count: acceptedCount,
+      prevLineCount,
+      newLineCount,
+      content: addedContent.trim(),
+    });
+    console.log("acceptedContentDetails :>> ", acceptedContentDetails);
+    // 5.光标移动然后换行--------->准备下次 inline suggestion
     await moveCursorToEndAndInsertNewLine(targetEditor);
-    // 6.空行检测----->如果存在空行，主动做一次触发内联推荐
-    if (isLastLinesEmpty(targetEditor, 2)) {
+    // 6.空行检测----------->如果存在空行，主动做一次触发内联推荐
+    if (shouldTriggerOnEmptyLines(targetEditor, 3, 2)) {
       outputChannel.appendLine("insert words for empty line to ");
       await insertTriggerWord(targetEditor);
     }
@@ -78,22 +120,24 @@ async function moveCursorToEndAndInsertNewLine(editor) {
   });
 }
 /**
- * @description 检查文件最后几行是否都是空行
+ * 检查最近 n 行里是否有超过 m 行是空行
  * @param {vscode.TextEditor} editor
- * @param {number} linesCount
+ * @param {number} linesCount 最近多少行
+ * @param {number} emptyThreshold 超过多少空行就触发
  * @returns {boolean}
  */
-function isLastLinesEmpty(editor, linesCount = 3) {
+function shouldTriggerOnEmptyLines(editor, linesCount = 3, emptyThreshold = 2) {
   const doc = editor.document;
   const totalLines = doc.lineCount;
   let emptyLines = 0;
+
   for (let i = totalLines - 1; i >= Math.max(0, totalLines - linesCount); i--) {
     const text = doc.lineAt(i).text.trim();
     if (text === "") {
       emptyLines++;
     }
   }
-  return emptyLines === linesCount;
+  return emptyLines > emptyThreshold;
 }
 
 /**
@@ -105,24 +149,11 @@ async function insertTriggerWord(editor) {
   const lastLineLength = editor.document.lineAt(lastLine).text.length;
   const endPosition = new vscode.Position(lastLine, lastLineLength);
   await editor.edit((editBuilder) => {
-    editBuilder.insert(endPosition, "\nconst");
+    editBuilder.insert(endPosition, "\nconst getData =");
   });
 }
 
 function startInlineLoop(minDelay = 1000, maxDelay = 2000) {
-  //
-  if (targetEditor.document.lineCount >= maxGeneratedLines) {
-    outputChannel.appendLine(`code generation completed, max line reached.`);
-    isGenerating = false;
-    stopInlineLoop();
-    vscode.window.showInformationMessage(
-      `code generation completed, stop coding`
-    );
-    targetEditor.document.save().then(() => {
-      outputChannel.appendLine("save success");
-    });
-    return;
-  }
   async function loop() {
     if (!isGenerating) return;
 
@@ -143,7 +174,14 @@ function activate(context) {
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
   outputChannel.show(true);
-
+  //注册panel的html页面
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      "coder-view",
+      new InlineReportViewProvider(context)
+    )
+  );
+  //注册命令
   context.subscriptions.push(
     vscode.commands.registerCommand("coding.start", async () => {
       if (isGenerating) {
@@ -182,7 +220,6 @@ function activate(context) {
       vscode.window.showInformationMessage(`coding in the ${fileName}....`);
     })
   );
-
   context.subscriptions.push(
     vscode.commands.registerCommand("coding.stop", () => {
       if (!isGenerating) {
@@ -199,7 +236,6 @@ function activate(context) {
       vscode.window.showInformationMessage("stop inline generator success");
     })
   );
-
   context.subscriptions.push(
     //预留一个命令的注册
     vscode.commands.registerCommand("autoInlineGenerator.tab", async () => {
@@ -226,7 +262,55 @@ function activate(context) {
     })
   );
 }
+class InlineReportViewProvider {
+  constructor(context) {
+    this._context = context;
+  }
 
+  resolveWebviewView(webviewView) {
+    const webview = webviewView.webview;
+    const mediaPath = vscode.Uri.file(
+      path.join(this._context.extensionPath, "media")
+    );
+
+    webview.options = {
+      enableScripts: true,
+      localResourceRoots: [mediaPath],
+    };
+
+    const htmlUri = vscode.Uri.file(
+      path.join(this._context.extensionPath, "media", "index.html")
+    );
+
+    vscode.workspace.fs.readFile(htmlUri).then((buffer) => {
+      let html = buffer.toString("utf8");
+
+      // 替换静态资源路径为 webview 可访问的 Uri
+      html = html.replace(/(src|href)="(.+?)"/g, (_, attr, relativePath) => {
+        const resourcePath = vscode.Uri.file(
+          path.join(this._context.extensionPath, "media", relativePath)
+        );
+        return `${attr}="${webview.asWebviewUri(resourcePath)}"`;
+      });
+
+      webview.html = html;
+    });
+
+    // 发送数据给 webview
+    webview.onDidReceiveMessage((message) => {
+      if (message.command === "ready") {
+        webview.postMessage({
+          type: "init",
+          acceptedSnippets: [
+            { count: 1, content: "console.log('Hello');" },
+            { count: 2, content: "let x = 42;" },
+          ],
+          fileList: [],
+        });
+      }
+    });
+  }
+}
 function deactivate() {
   isGenerating = false;
   stopInlineLoop();
