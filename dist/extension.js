@@ -66,9 +66,7 @@ async function triggerAndAcceptInline() {
       newLineCount,
       content: addedContent.trim()
     });
-    console.log("--------reportViewProvider :>> ", reportViewProvider);
     if (reportViewProvider) {
-      outputChannel.appendLine("\u53D1\u9001\u6D88\u606F\u4E86");
       reportViewProvider.postUpdateMessage(acceptedContentDetails);
     }
     await moveCursorToEndAndInsertNewLine(targetEditor);
