@@ -2,7 +2,7 @@
   "name": "bot-coder",
   "displayName": "A wise coding-bot, can auto write code for you, accept inline suggestions",
   "description": "auto generate && auto accept",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "HaoFuYang",
   "icon": "icon.png",
   "engines": {
@@ -16,20 +16,21 @@
     "onCommand:coding.start",
     "onCommand:coding.stop"
   ],
-  "main": "./src/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
           "id": "coder-view",
           "title": "coderView",
-          "icon": "media/icon.png"
+          "icon": "./panel.svg"
         }
       ]
     },
     "views": {
       "coder-view": [
         {
+          "icon": "./panel.svg",
           "type": "webview",
           "id": "coder-view",
           "name": "Coder View"
@@ -54,5 +55,14 @@
         "title": "Tab Auto Inline Generator"
       }
     ]
+  },
+  "scripts": {
+    "build:webview": "cd webview-ui && npm install && npm run build",
+    "build:extension": "esbuild src/extension.js --bundle --platform=node --external:vscode --outfile=dist/extension.js",
+    "build": "npm run build:webview && npm run build:extension",
+    "package": "npm run build && vsce package"
+  },
+  "devDependencies": {
+    "vsce": "^2.15.0"
   }
 }

@@ -9,7 +9,7 @@ let hasInsertedTrigger = false;
 let maxGeneratedLines = 1000;
 let acceptedContentDetails = []; //记录采纳的详细信息
 let acceptedCount = 0; // 记录采纳的次数
-
+let reportViewProvider = null;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -40,7 +40,7 @@ async function triggerAndAcceptInline() {
       await targetEditor.edit((editBuilder) => {
         editBuilder.insert(targetEditor.selection.active, "const");
       });
-      outputChannel.appendLine("first trigger console success");
+      outputChannel.appendLine("first trigger success");
       hasInsertedTrigger = true;
     }
     // 2.触发----------->inline suggestion
@@ -77,7 +77,6 @@ async function triggerAndAcceptInline() {
         addedContent = targetEditor.document.lineAt(lastLineNumber).text;
       }
     }
-    console.log("addedContent :>> ", addedContent);
     acceptedCount++;
     acceptedContentDetails.push({
       count: acceptedCount,
@@ -85,10 +84,13 @@ async function triggerAndAcceptInline() {
       newLineCount,
       content: addedContent.trim(),
     });
-    console.log("acceptedContentDetails :>> ", acceptedContentDetails);
-    // 5.光标移动然后换行--------->准备下次 inline suggestion
+    // 5.发送数据到webview
+    if (reportViewProvider) {
+      reportViewProvider.postUpdateMessage(acceptedContentDetails);
+    }
+    // 6.光标移动然后换行--------->准备下次 inline suggestion
     await moveCursorToEndAndInsertNewLine(targetEditor);
-    // 6.空行检测----------->如果存在空行，主动做一次触发内联推荐
+    // 7.空行检测----------->如果存在空行，主动做一次触发内联推荐
     if (shouldTriggerOnEmptyLines(targetEditor, 3, 2)) {
       outputChannel.appendLine("insert words for empty line to ");
       await insertTriggerWord(targetEditor);
@@ -174,12 +176,10 @@ function activate(context) {
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
   outputChannel.show(true);
+  reportViewProvider = new InlineReportViewProvider(context);
   //注册panel的html页面
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      "coder-view",
-      new InlineReportViewProvider(context)
-    )
+    vscode.window.registerWebviewViewProvider("coder-view", reportViewProvider)
   );
   //注册命令
   context.subscriptions.push(
@@ -265,9 +265,11 @@ function activate(context) {
 class InlineReportViewProvider {
   constructor(context) {
     this._context = context;
+    this._webviewView = null;
   }
 
   resolveWebviewView(webviewView) {
+    this._webview = webviewView.webview;
     const webview = webviewView.webview;
     const mediaPath = vscode.Uri.file(
       path.join(this._context.extensionPath, "media")
@@ -298,17 +300,21 @@ class InlineReportViewProvider {
 
     // 发送数据给 webview
     webview.onDidReceiveMessage((message) => {
-      if (message.command === "ready") {
-        webview.postMessage({
-          type: "init",
-          acceptedSnippets: [
-            { count: 1, content: "console.log('Hello');" },
-            { count: 2, content: "let x = 42;" },
-          ],
-          fileList: [],
-        });
+      if (message.command === "coding.start") {
+        vscode.commands.executeCommand("coding.start");
+      }
+      if (message.command === "coding.stop") {
+        vscode.commands.executeCommand("coding.stop");
       }
     });
+  }
+  postUpdateMessage(data) {
+    if (this._webview) {
+      this._webview.postMessage({
+        type: "UPDATE",
+        acceptedContentDetails: data,
+      });
+    }
   }
 }
 function deactivate() {

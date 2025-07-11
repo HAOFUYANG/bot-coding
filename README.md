@@ -11,3 +11,10 @@
 - ✅ 自动保存
 - ✅ 内联检测失败自动触发重新检测
 - ✅ 采纳数据记录存储
+
+| 动作                      | 说明                              |
+| ------------------------- | --------------------------------- |
+| `npm run build:webview`   | vite 构建 webview 到 `media/`     |
+| `npm run build:extension` | esbuild 打包 extension 到 `dist/` |
+| `npm run build`           | 二合一构建                        |
+| `npm run package`         | 完整构建并打包成 `.vsix`          |

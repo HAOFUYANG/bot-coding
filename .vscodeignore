@@ -1,0 +1,20 @@
+# 忽略 node_modules，只打包生产依赖
+**/node_modules/**
+!**/node_modules/vscode/**
+
+# 忽略源码文件
+webview-ui/**
+
+# 忽略配置文件
+webpack.config.js
+vite.config.js
+.babelrc
+.eslintrc.js
+tsconfig.json
+
+# 忽略 git
+.git/**
+.gitignore
+
+# 忽略日志
+*.log
