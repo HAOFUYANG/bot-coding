@@ -85,6 +85,9 @@ async function triggerAndAcceptInline() {
       content: addedContent.trim(),
     });
     // 5.发送数据到webview
+    //对上一次数据进行清理
+    acceptedContentDetails = [];
+    acceptedCount = 0;
     if (reportViewProvider) {
       reportViewProvider.postUpdateMessage(acceptedContentDetails);
     }
