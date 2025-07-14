@@ -3,17 +3,27 @@ import {
   SyncOutlined,
   OrderedListOutlined,
   FormOutlined,
+  ScanOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import { Flex, Button, Tabs, Table, ConfigProvider, message } from "antd";
+import {
+  Flex,
+  Button,
+  Tabs,
+  Table,
+  ConfigProvider,
+  message,
+  Popconfirm,
+} from "antd";
 import "./style/antd.css";
 const vscodeApi = acquireVsCodeApi();
 
-const codeDetailTable2 = [
+const botFiles = [
   { index: "1", time: "2022-02-01", content: "abcdefg123" },
   { index: "2", time: "2022-02-01", content: "hijklmn456" },
 ];
 
-// columns
+// tab1---columns
 const columns = [
   { title: "序号", dataIndex: "count", key: "count", width: 50 },
   {
@@ -30,15 +40,50 @@ const columns = [
   },
   { title: "内容", dataIndex: "content", key: "content", width: 200 },
 ];
-
+//tab2---columns
+const fileColumns = (onOpen, onDelete) => [
+  { title: "文件名", dataIndex: "name", key: "name", width: 200 },
+  { title: "路径", dataIndex: "path", key: "path" },
+  {
+    title: "操作",
+    dataIndex: "action",
+    key: "action",
+    width: 100,
+    render: (_, record) => (
+      <Flex gap="small">
+        <Button
+          size="small"
+          color="primary"
+          variant="text"
+          onClick={() => onOpen(record)}
+        >
+          查看
+        </Button>
+        <Popconfirm
+          title="确定删除该文件吗？"
+          onConfirm={() => onDelete(record)}
+        >
+          <Button size="small" color="danger" variant="text">
+            删除
+          </Button>
+        </Popconfirm>
+      </Flex>
+    ),
+  },
+];
 const App = () => {
   const [acceptedContentDetails, setAcceptedContentDetails] = useState([]);
+  const [botFiles, setBotFiles] = useState([]);
   useEffect(() => {
     const handler = (event) => {
       console.log("event-------- :>> ", event);
-      const { type, acceptedContentDetails } = event.data;
+      const { type, acceptedContentDetails, botFiles } = event.data;
       if (type === "UPDATE") {
         setAcceptedContentDetails(acceptedContentDetails);
+      }
+      if (type === "BOT_FILES") {
+        setBotFiles(botFiles);
+        message.success("文件列表已更新");
       }
     };
     window.addEventListener("message", handler);
@@ -58,6 +103,17 @@ const App = () => {
     message.warning("已发送 Stop 命令");
   };
 
+  //更新当前项目文件信息
+  const handleRefreshFiles = () => {
+    vscodeApi.postMessage({ command: "scanBotFiles" });
+    message.info("正在扫描当前项目文件...");
+  };
+  const handleOpenFile = (file) => {
+    vscodeApi.postMessage({ command: "openBotFile", path: file.path });
+  };
+  const handleDeleteFile = (file) => {
+    vscodeApi.postMessage({ command: "deleteBotFile", path: file.path });
+  };
   return (
     <ConfigProvider
       theme={{
@@ -120,14 +176,25 @@ const App = () => {
                 </>
               ),
               children: (
-                <Table
-                  dataSource={codeDetailTable2}
-                  columns={columns}
-                  pagination={false}
-                  size="small"
-                  rowKey="index"
-                  className="mt-4"
-                />
+                <>
+                  <div style={{ textAlign: "right", marginBottom: 8 }}>
+                    <Button
+                      type="primary"
+                      icon={<ScanOutlined />}
+                      onClick={handleRefreshFiles}
+                    >
+                      Scan
+                    </Button>
+                  </div>
+                  <Table
+                    dataSource={botFiles}
+                    columns={fileColumns(handleOpenFile, handleDeleteFile)}
+                    pagination={false}
+                    size="small"
+                    rowKey="path"
+                    className="mt-4"
+                  />
+                </>
               ),
             },
           ]}

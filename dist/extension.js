@@ -91,6 +91,17 @@ async function moveCursorToEndAndInsertNewLine(editor) {
     editBuilder.insert(endPosition, "\n");
   });
 }
+async function scanBotFilesAndUpdate(reportViewProvider2) {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (workspaceFolders && workspaceFolders.length > 0) {
+    const files = await vscode.workspace.findFiles("**/bot-coder-*.js");
+    const result = files.map((fileUri) => ({
+      name: path.basename(fileUri.fsPath),
+      path: fileUri.fsPath
+    }));
+    reportViewProvider2?.postUpdateBotFiles(result);
+  }
+}
 function shouldTriggerOnEmptyLines(editor, linesCount = 3, emptyThreshold = 2) {
   const doc = editor.document;
   const totalLines = doc.lineCount;
@@ -140,13 +151,20 @@ function activate(context) {
         vscode.window.showInformationMessage("coding ...");
         return;
       }
+      acceptedContentDetails = [];
+      acceptedCount = 0;
+      if (reportViewProvider) {
+        reportViewProvider.postUpdateMessage(acceptedContentDetails);
+      }
       const folderUri = await vscode.window.showOpenDialog({
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
         openLabel: "\u9009\u62E9\u751F\u6210\u6587\u4EF6\u5939"
       });
-      if (!folderUri) return;
+      if (!folderUri) {
+        return;
+      }
       const timestamp = (/* @__PURE__ */ new Date()).getTime();
       const fileName = `bot-coder-${timestamp}.js`;
       const fileUri = vscode.Uri.file(path.join(folderUri[0].fsPath, fileName));
@@ -195,6 +213,25 @@ function activate(context) {
       );
     })
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("scanBotFiles", async () => {
+      await scanBotFilesAndUpdate(reportViewProvider);
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("openBotFile", async (filePath) => {
+      const uri = vscode.Uri.file(filePath);
+      await vscode.window.showTextDocument(uri);
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("deleteBotFile", async (filePath) => {
+      const uri = vscode.Uri.file(filePath);
+      await vscode.workspace.fs.delete(uri);
+      vscode.window.showInformationMessage(`\u6587\u4EF6\u5DF2\u5220\u9664: ${filePath}`);
+      await scanBotFilesAndUpdate(reportViewProvider);
+    })
+  );
 }
 var InlineReportViewProvider = class {
   constructor(context) {
@@ -225,19 +262,39 @@ var InlineReportViewProvider = class {
       webview.html = html;
     });
     webview.onDidReceiveMessage((message) => {
+      console.log("message :>> ", message);
       if (message.command === "coding.start") {
         vscode.commands.executeCommand("coding.start");
       }
       if (message.command === "coding.stop") {
         vscode.commands.executeCommand("coding.stop");
       }
+      if (message.command === "scanBotFiles") {
+        vscode.commands.executeCommand("scanBotFiles");
+      }
+      if (message.command === "openBotFile") {
+        vscode.commands.executeCommand("openBotFile", message.path);
+      }
+      if (message.command === "deleteBotFile") {
+        vscode.commands.executeCommand("deleteBotFile", message.path);
+      }
     });
   }
+  // 发送生成代码数据给 webview
   postUpdateMessage(data) {
     if (this._webview) {
       this._webview.postMessage({
         type: "UPDATE",
         acceptedContentDetails: data
+      });
+    }
+  }
+  // 发送当前项目的扫描数据
+  postUpdateBotFiles(files) {
+    if (this._webview) {
+      this._webview.postMessage({
+        type: "BOT_FILES",
+        botFiles: files
       });
     }
   }

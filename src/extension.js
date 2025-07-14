@@ -85,9 +85,7 @@ async function triggerAndAcceptInline() {
       content: addedContent.trim(),
     });
     // 5.发送数据到webview
-    //对上一次数据进行清理
-    acceptedContentDetails = [];
-    acceptedCount = 0;
+
     if (reportViewProvider) {
       reportViewProvider.postUpdateMessage(acceptedContentDetails);
     }
@@ -123,6 +121,21 @@ async function moveCursorToEndAndInsertNewLine(editor) {
   await editor.edit((editBuilder) => {
     editBuilder.insert(endPosition, "\n");
   });
+}
+/**
+ * @description 项目扫描
+ * @param {*} reportViewProvider
+ */
+async function scanBotFilesAndUpdate(reportViewProvider) {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (workspaceFolders && workspaceFolders.length > 0) {
+    const files = await vscode.workspace.findFiles("**/bot-coder-*.js");
+    const result = files.map((fileUri) => ({
+      name: path.basename(fileUri.fsPath),
+      path: fileUri.fsPath,
+    }));
+    reportViewProvider?.postUpdateBotFiles(result);
+  }
 }
 /**
  * 检查最近 n 行里是否有超过 m 行是空行
@@ -191,13 +204,20 @@ function activate(context) {
         vscode.window.showInformationMessage("coding ...");
         return;
       }
+      acceptedContentDetails = [];
+      acceptedCount = 0;
+      if (reportViewProvider) {
+        reportViewProvider.postUpdateMessage(acceptedContentDetails); // 通知webview清空
+      }
       const folderUri = await vscode.window.showOpenDialog({
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
         openLabel: "选择生成文件夹",
       });
-      if (!folderUri) return;
+      if (!folderUri) {
+        return;
+      }
       const timestamp = new Date().getTime();
       const fileName = `bot-coder-${timestamp}.js`;
       const fileUri = vscode.Uri.file(path.join(folderUri[0].fsPath, fileName));
@@ -264,6 +284,28 @@ function activate(context) {
       // ];
     })
   );
+  //扫描当前项目中的bot-coder-***文件
+  context.subscriptions.push(
+    vscode.commands.registerCommand("scanBotFiles", async () => {
+      await scanBotFilesAndUpdate(reportViewProvider);
+    })
+  );
+  //打开指定文件到编辑器
+  context.subscriptions.push(
+    vscode.commands.registerCommand("openBotFile", async (filePath) => {
+      const uri = vscode.Uri.file(filePath);
+      await vscode.window.showTextDocument(uri);
+    })
+  );
+  //删除选中的文件
+  context.subscriptions.push(
+    vscode.commands.registerCommand("deleteBotFile", async (filePath) => {
+      const uri = vscode.Uri.file(filePath);
+      await vscode.workspace.fs.delete(uri);
+      vscode.window.showInformationMessage(`文件已删除: ${filePath}`);
+      await scanBotFilesAndUpdate(reportViewProvider);
+    })
+  );
 }
 class InlineReportViewProvider {
   constructor(context) {
@@ -300,22 +342,42 @@ class InlineReportViewProvider {
 
       webview.html = html;
     });
-
-    // 发送数据给 webview
+    //接受消息
     webview.onDidReceiveMessage((message) => {
+      console.log("message :>> ", message);
       if (message.command === "coding.start") {
         vscode.commands.executeCommand("coding.start");
       }
       if (message.command === "coding.stop") {
         vscode.commands.executeCommand("coding.stop");
       }
+      if (message.command === "scanBotFiles") {
+        vscode.commands.executeCommand("scanBotFiles");
+      }
+      if (message.command === "openBotFile") {
+        vscode.commands.executeCommand("openBotFile", message.path);
+      }
+      if (message.command === "deleteBotFile") {
+        vscode.commands.executeCommand("deleteBotFile", message.path);
+      }
     });
   }
+
+  // 发送生成代码数据给 webview
   postUpdateMessage(data) {
     if (this._webview) {
       this._webview.postMessage({
         type: "UPDATE",
         acceptedContentDetails: data,
+      });
+    }
+  }
+  // 发送当前项目的扫描数据
+  postUpdateBotFiles(files) {
+    if (this._webview) {
+      this._webview.postMessage({
+        type: "BOT_FILES",
+        botFiles: files,
       });
     }
   }
