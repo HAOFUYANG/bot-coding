@@ -7,6 +7,7 @@ let outputChannel = null;
 let loopTimer = null;
 let hasInsertedTrigger = false;
 let maxGeneratedLines = 1000;
+let acceptRatio = 25;
 let acceptedContentDetails = []; //记录采纳的详细信息
 let acceptedCount = 0; // 记录采纳的次数
 let reportViewProvider = null;
@@ -199,11 +200,12 @@ function activate(context) {
   );
   //注册命令
   context.subscriptions.push(
-    vscode.commands.registerCommand("coding.start", async () => {
+    vscode.commands.registerCommand("coding.start", async (args) => {
       if (isGenerating) {
         vscode.window.showInformationMessage("coding ...");
         return;
       }
+      console.log("args :>> ", args);
       acceptedContentDetails = [];
       acceptedCount = 0;
       if (reportViewProvider) {
@@ -227,18 +229,27 @@ function activate(context) {
       isGenerating = true;
       hasInsertedTrigger = false;
       outputChannel.appendLine(`ready to code in the ${fileName}...`);
-      //设置最大输入行数
-      const inputMaxLines = await vscode.window.showInputBox({
-        prompt: "请输入要生成的最大行数（超过后自动停止）",
-        placeHolder: "默认1000",
-        validateInput: (value) => {
-          if (value && isNaN(Number(value))) {
-            return "请输入数字";
-          }
-          return null;
-        },
-      });
-      maxGeneratedLines = inputMaxLines ? Number(inputMaxLines) : 1000;
+
+      // 从 args 获取参数
+      let maxLines = args?.maxGeneratedLines;
+      //  如果没传入参数，则用 inputBox 询问
+      if (!maxLines) {
+        const inputMaxLines = await vscode.window.showInputBox({
+          prompt: "请输入要生成的最大行数（超过后自动停止）",
+          placeHolder: "默认1000",
+          validateInput: (value) => {
+            if (value && isNaN(Number(value))) {
+              return "请输入数字";
+            }
+            return null;
+          },
+        });
+        maxLines = inputMaxLines ? Number(inputMaxLines) : 1000;
+      }
+      //生成行数配置
+      maxGeneratedLines = maxLines;
+      //采纳率配置
+      acceptRatio = args?.acceptRatio ?? 30;
       startInlineLoop();
       vscode.window.showInformationMessage(`coding in the ${fileName}....`);
     })
@@ -372,7 +383,12 @@ class InlineReportViewProvider {
     webview.onDidReceiveMessage((message) => {
       console.log("message :>> ", message);
       if (message.command === "coding.start") {
-        vscode.commands.executeCommand("coding.start");
+        const { maxGeneratedLines, acceptRatio } = message.params;
+
+        vscode.commands.executeCommand("coding.start", {
+          maxGeneratedLines,
+          acceptRatio,
+        });
       }
       if (message.command === "coding.stop") {
         vscode.commands.executeCommand("coding.stop");

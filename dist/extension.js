@@ -7,6 +7,7 @@ var outputChannel = null;
 var loopTimer = null;
 var hasInsertedTrigger = false;
 var maxGeneratedLines = 1e3;
+var acceptRatio = 25;
 var acceptedContentDetails = [];
 var acceptedCount = 0;
 var reportViewProvider = null;
@@ -146,11 +147,12 @@ function activate(context) {
     vscode.window.registerWebviewViewProvider("coder-view", reportViewProvider)
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("coding.start", async () => {
+    vscode.commands.registerCommand("coding.start", async (args) => {
       if (isGenerating) {
         vscode.window.showInformationMessage("coding ...");
         return;
       }
+      console.log("args :>> ", args);
       acceptedContentDetails = [];
       acceptedCount = 0;
       if (reportViewProvider) {
@@ -173,17 +175,22 @@ function activate(context) {
       isGenerating = true;
       hasInsertedTrigger = false;
       outputChannel.appendLine(`ready to code in the ${fileName}...`);
-      const inputMaxLines = await vscode.window.showInputBox({
-        prompt: "\u8BF7\u8F93\u5165\u8981\u751F\u6210\u7684\u6700\u5927\u884C\u6570\uFF08\u8D85\u8FC7\u540E\u81EA\u52A8\u505C\u6B62\uFF09",
-        placeHolder: "\u9ED8\u8BA41000",
-        validateInput: (value) => {
-          if (value && isNaN(Number(value))) {
-            return "\u8BF7\u8F93\u5165\u6570\u5B57";
+      let maxLines = args?.maxGeneratedLines;
+      if (!maxLines) {
+        const inputMaxLines = await vscode.window.showInputBox({
+          prompt: "\u8BF7\u8F93\u5165\u8981\u751F\u6210\u7684\u6700\u5927\u884C\u6570\uFF08\u8D85\u8FC7\u540E\u81EA\u52A8\u505C\u6B62\uFF09",
+          placeHolder: "\u9ED8\u8BA41000",
+          validateInput: (value) => {
+            if (value && isNaN(Number(value))) {
+              return "\u8BF7\u8F93\u5165\u6570\u5B57";
+            }
+            return null;
           }
-          return null;
-        }
-      });
-      maxGeneratedLines = inputMaxLines ? Number(inputMaxLines) : 1e3;
+        });
+        maxLines = inputMaxLines ? Number(inputMaxLines) : 1e3;
+      }
+      maxGeneratedLines = maxLines;
+      acceptRatio = args?.acceptRatio ?? 30;
       startInlineLoop();
       vscode.window.showInformationMessage(`coding in the ${fileName}....`);
     })
@@ -250,7 +257,7 @@ var InlineReportViewProvider = class {
     };
     console.log("process.env.NODE_ENV------- :>> ", process.env.NODE_ENV);
     const isDevMode = process.env.NODE_ENV === "development";
-    if (isDevMode) {
+    if (false) {
       webview.html = `
    <!DOCTYPE html>
 <html lang="en">
@@ -289,7 +296,11 @@ var InlineReportViewProvider = class {
     webview.onDidReceiveMessage((message) => {
       console.log("message :>> ", message);
       if (message.command === "coding.start") {
-        vscode.commands.executeCommand("coding.start");
+        const { maxGeneratedLines: maxGeneratedLines2, acceptRatio: acceptRatio2 } = message.params;
+        vscode.commands.executeCommand("coding.start", {
+          maxGeneratedLines: maxGeneratedLines2,
+          acceptRatio: acceptRatio2
+        });
       }
       if (message.command === "coding.stop") {
         vscode.commands.executeCommand("coding.stop");

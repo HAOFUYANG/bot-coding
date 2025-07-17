@@ -1,21 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  SyncOutlined,
-  OrderedListOutlined,
-  FormOutlined,
-  ScanOutlined,
-} from "@ant-design/icons";
-import {
-  Flex,
-  Button,
-  Tabs,
-  Table,
-  ConfigProvider,
-  message,
-  Popconfirm,
-  Tooltip,
-} from "antd";
+import { Tabs, ConfigProvider, message } from "antd";
+import { OrderedListOutlined, FormOutlined } from "@ant-design/icons";
+import ControlPanel from "./components/ControlPanel";
+import FileTable from "./components/FileTable";
+import LogTable from "./components/LogTable";
+import SettingsModal from "./components/SettingsModal";
 import "./style/antd.css";
+
 const vscodeApi = window.acquireVsCodeApi
   ? window.acquireVsCodeApi()
   : {
@@ -24,65 +15,18 @@ const vscodeApi = window.acquireVsCodeApi
       setState: () => {},
     };
 
-// tab1---columns
-const columns = [
-  { title: "序号", dataIndex: "count", key: "count", width: 50 },
-  {
-    title: "开始行",
-    dataIndex: "prevLineCount",
-    key: "prevLineCount",
-    width: 70,
-  },
-  {
-    title: "结束行",
-    dataIndex: "newLineCount",
-    key: "newLineCount",
-    width: 80,
-  },
-  { title: "内容", dataIndex: "content", key: "content" },
-];
-//tab2---columns
-const fileColumns = (onOpen, onDelete) => [
-  { title: "文件名", dataIndex: "name", key: "name", width: 100 },
-  { title: "路径", dataIndex: "path", key: "path" },
-  {
-    title: "操作",
-    dataIndex: "action",
-    key: "action",
-    width: 100,
-    fixed: "right",
-    render: (_, record) => (
-      <Flex gap="small">
-        <Button
-          size="small"
-          color="primary"
-          variant="text"
-          onClick={() => onOpen(record)}
-        >
-          查看
-        </Button>
-        <Popconfirm
-          title="确定删除该文件吗？"
-          onConfirm={() => onDelete(record)}
-        >
-          <Button size="small" color="danger" variant="text">
-            删除
-          </Button>
-        </Popconfirm>
-      </Flex>
-    ),
-  },
-];
 const App = () => {
   const [acceptedContentDetails, setAcceptedContentDetails] = useState([]);
   const [botFiles, setBotFiles] = useState([]);
+  const [maxLines, setMaxLines] = useState(100);
+  const [acceptRatio, setAcceptRatio] = useState(25);
+  const [configModalVisible, setConfigModalVisible] = useState(false);
+  const [startLoading, setStartLoading] = useState(false);
+
   useEffect(() => {
     const handler = (event) => {
-      console.log("event-------- :>> ", event);
       const { type, acceptedContentDetails, botFiles } = event.data;
-      if (type === "UPDATE") {
-        setAcceptedContentDetails(acceptedContentDetails);
-      }
+      if (type === "UPDATE") setAcceptedContentDetails(acceptedContentDetails);
       if (type === "BOT_FILES") {
         setBotFiles(botFiles);
         message.success("文件列表已更新");
@@ -91,11 +35,14 @@ const App = () => {
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   }, []);
-  //命令操作
-  const [startLoading, setStartLoading] = useState(false);
-  const handleStartCoding = () => {
-    vscodeApi.postMessage({ command: "coding.start" });
+
+  const handleConfirmSettings = () => {
     setStartLoading(true);
+    setConfigModalVisible(false);
+    vscodeApi.postMessage({
+      command: "coding.start",
+      params: { maxGeneratedLines: maxLines, acceptRatio },
+    });
   };
 
   const handleStopCoding = () => {
@@ -103,17 +50,6 @@ const App = () => {
     setStartLoading(false);
   };
 
-  //更新当前项目文件信息
-  const handleRefreshFiles = () => {
-    vscodeApi.postMessage({ command: "scanBotFiles" });
-    message.info("正在扫描当前项目文件...");
-  };
-  const handleOpenFile = (file) => {
-    vscodeApi.postMessage({ command: "openBotFile", path: file.path });
-  };
-  const handleDeleteFile = (file) => {
-    vscodeApi.postMessage({ command: "deleteBotFile", path: file.path });
-  };
   return (
     <ConfigProvider
       theme={{
@@ -128,27 +64,14 @@ const App = () => {
       }}
     >
       <div className="container">
-        <Flex gap="small" align="flex-start" vertical>
-          <Flex gap="small">
-            <Button
-              loading={startLoading ? { icon: <SyncOutlined spin /> } : false}
-              iconPosition={"end"}
-              type="primary"
-              onClick={handleStartCoding}
-            >
-              开始
-            </Button>
-            <Button type="primary" danger onClick={handleStopCoding}>
-              停止
-            </Button>
-          </Flex>
-        </Flex>
+        <ControlPanel
+          onStart={() => setConfigModalVisible(true)}
+          onStop={handleStopCoding}
+          loading={startLoading}
+        />
 
         <Tabs
           defaultActiveKey="LOG"
-          tabBarStyle={{
-            borderBottom: "1px solid var(--vscode-editorGroup-border)",
-          }}
           items={[
             {
               key: "LOG",
@@ -157,16 +80,7 @@ const App = () => {
                   <OrderedListOutlined /> 采纳日志
                 </>
               ),
-              children: (
-                <Table
-                  dataSource={acceptedContentDetails}
-                  columns={columns}
-                  pagination={false}
-                  size="small"
-                  rowKey="index"
-                  className="mt-4"
-                />
-              ),
+              children: <LogTable data={acceptedContentDetails} />,
             },
             {
               key: "FILE",
@@ -176,31 +90,39 @@ const App = () => {
                 </>
               ),
               children: (
-                <>
-                  <div style={{ textAlign: "right", marginBottom: 8 }}>
-                    <Tooltip title="扫描当前项目所有bot-coder生成的文件">
-                      <Button
-                        type="primary"
-                        icon={<ScanOutlined />}
-                        onClick={handleRefreshFiles}
-                      >
-                        扫描
-                      </Button>
-                    </Tooltip>
-                  </div>
-                  <Table
-                    dataSource={botFiles}
-                    columns={fileColumns(handleOpenFile, handleDeleteFile)}
-                    pagination={false}
-                    size="small"
-                    rowKey="path"
-                    className="mt-4"
-                    scroll={{ x: "max-content" }}
-                  />
-                </>
+                <FileTable
+                  data={botFiles}
+                  onOpen={(file) =>
+                    vscodeApi.postMessage({
+                      command: "openBotFile",
+                      path: file.path,
+                    })
+                  }
+                  onDelete={(file) =>
+                    vscodeApi.postMessage({
+                      command: "deleteBotFile",
+                      path: file.path,
+                    })
+                  }
+                  onRefresh={() => {
+                    vscodeApi.postMessage({ command: "scanBotFiles" });
+                    message.info("正在扫描当前项目文件...");
+                  }}
+                />
               ),
             },
           ]}
+        />
+
+        <SettingsModal
+          visible={configModalVisible}
+          onClose={() => setConfigModalVisible(false)}
+          onConfirm={handleConfirmSettings}
+          maxLines={maxLines}
+          setMaxLines={setMaxLines}
+          acceptRatio={acceptRatio}
+          setAcceptRatio={setAcceptRatio}
+          disabled={startLoading}
         />
       </div>
     </ConfigProvider>
