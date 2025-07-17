@@ -10,9 +10,9 @@
 body {
   margin: 0;
   min-width: 180px;
-  max-width: 500px;
+  font-size: 12px;
   min-height: 100vh;
-  background-color: var(--vscode-editor-background);
+  background-color: var(--vscode-editor-background, #111816);
 }
 
 h1 {

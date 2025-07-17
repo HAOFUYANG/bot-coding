@@ -57,10 +57,12 @@
     ]
   },
   "scripts": {
+    "dev:webview": "cd webview-ui && npm run dev",
     "build:webview": "cd webview-ui && npm install && npm run build",
     "build:extension": "esbuild src/extension.js --bundle --platform=node --external:vscode --outfile=dist/extension.js",
     "build": "npm run build:webview && npm run build:extension",
-    "package": "npm run build && vsce package"
+    "prepare:package": "node scripts/switch-main.js",
+    "package": "npm run build && npm run prepare:package && vsce package"
   },
   "devDependencies": {
     "vsce": "^2.15.0"

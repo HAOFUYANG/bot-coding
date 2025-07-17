@@ -248,19 +248,44 @@ var InlineReportViewProvider = class {
       enableScripts: true,
       localResourceRoots: [mediaPath]
     };
-    const htmlUri = vscode.Uri.file(
-      path.join(this._context.extensionPath, "media", "index.html")
-    );
-    vscode.workspace.fs.readFile(htmlUri).then((buffer) => {
-      let html = buffer.toString("utf8");
-      html = html.replace(/(src|href)="(.+?)"/g, (_, attr, relativePath) => {
-        const resourcePath = vscode.Uri.file(
-          path.join(this._context.extensionPath, "media", relativePath)
-        );
-        return `${attr}="${webview.asWebviewUri(resourcePath)}"`;
+    console.log("process.env.NODE_ENV------- :>> ", process.env.NODE_ENV);
+    const isDevMode = process.env.NODE_ENV === "development";
+    if (isDevMode) {
+      webview.html = `
+   <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Coder View</title>
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    img-src http://localhost:5173 data:;
+    script-src 'unsafe-eval' 'unsafe-inline' http://localhost:5173;
+    style-src 'unsafe-inline' http://localhost:5173;
+    connect-src http://localhost:5173 ws://localhost:5173;
+    frame-src http://localhost:5173;">
+</head>
+<body style="margin:0;padding:0;overflow:hidden;height:100vh;width:100vw;">
+  <iframe src="http://localhost:5173" style="width:100%; height:100%; border:none;"></iframe>
+</body>
+</html>
+  `;
+    } else {
+      const htmlUri = vscode.Uri.file(
+        path.join(this._context.extensionPath, "media", "index.html")
+      );
+      vscode.workspace.fs.readFile(htmlUri).then((buffer) => {
+        let html = buffer.toString("utf8");
+        html = html.replace(/(src|href)="(.+?)"/g, (_, attr, relativePath) => {
+          const resourcePath = vscode.Uri.file(
+            path.join(this._context.extensionPath, "media", relativePath)
+          );
+          return `${attr}="${webview.asWebviewUri(resourcePath)}"`;
+        });
+        webview.html = html;
       });
-      webview.html = html;
-    });
+    }
     webview.onDidReceiveMessage((message) => {
       console.log("message :>> ", message);
       if (message.command === "coding.start") {

@@ -4,7 +4,6 @@ import {
   OrderedListOutlined,
   FormOutlined,
   ScanOutlined,
-  DeleteOutlined,
 } from "@ant-design/icons";
 import {
   Flex,
@@ -14,14 +13,16 @@ import {
   ConfigProvider,
   message,
   Popconfirm,
+  Tooltip,
 } from "antd";
 import "./style/antd.css";
-const vscodeApi = acquireVsCodeApi();
-
-const botFiles = [
-  { index: "1", time: "2022-02-01", content: "abcdefg123" },
-  { index: "2", time: "2022-02-01", content: "hijklmn456" },
-];
+const vscodeApi = window.acquireVsCodeApi
+  ? window.acquireVsCodeApi()
+  : {
+      postMessage: (...args) => console.log("[DEV MOCK postMessage]", ...args),
+      getState: () => null,
+      setState: () => {},
+    };
 
 // tab1---columns
 const columns = [
@@ -38,17 +39,18 @@ const columns = [
     key: "newLineCount",
     width: 80,
   },
-  { title: "内容", dataIndex: "content", key: "content", width: 200 },
+  { title: "内容", dataIndex: "content", key: "content" },
 ];
 //tab2---columns
 const fileColumns = (onOpen, onDelete) => [
-  { title: "文件名", dataIndex: "name", key: "name", width: 200 },
+  { title: "文件名", dataIndex: "name", key: "name", width: 100 },
   { title: "路径", dataIndex: "path", key: "path" },
   {
     title: "操作",
     dataIndex: "action",
     key: "action",
     width: 100,
+    fixed: "right",
     render: (_, record) => (
       <Flex gap="small">
         <Button
@@ -94,13 +96,11 @@ const App = () => {
   const handleStartCoding = () => {
     vscodeApi.postMessage({ command: "coding.start" });
     setStartLoading(true);
-    message.success("已发送 Start 命令");
   };
 
   const handleStopCoding = () => {
     vscodeApi.postMessage({ command: "coding.stop" });
     setStartLoading(false);
-    message.warning("已发送 Stop 命令");
   };
 
   //更新当前项目文件信息
@@ -117,12 +117,12 @@ const App = () => {
   return (
     <ConfigProvider
       theme={{
-        token: { borderRadius: 2 },
+        token: { borderRadius: 2, fontSize: 12 },
         components: {
           Tabs: {
             inkBarColor: "var(--vscode-editor-foreground)",
             itemActiveColor: "var(--vscode-editor-foreground)",
-            itemColor: "var(--vscode-disabledForeground)",
+            itemColor: "var(--vscode-disabledForeground,#fff)",
           },
         },
       }}
@@ -136,10 +136,10 @@ const App = () => {
               type="primary"
               onClick={handleStartCoding}
             >
-              Start
+              开始
             </Button>
             <Button type="primary" danger onClick={handleStopCoding}>
-              Stop
+              停止
             </Button>
           </Flex>
         </Flex>
@@ -178,13 +178,15 @@ const App = () => {
               children: (
                 <>
                   <div style={{ textAlign: "right", marginBottom: 8 }}>
-                    <Button
-                      type="primary"
-                      icon={<ScanOutlined />}
-                      onClick={handleRefreshFiles}
-                    >
-                      Scan
-                    </Button>
+                    <Tooltip title="扫描当前项目所有bot-coder生成的文件">
+                      <Button
+                        type="primary"
+                        icon={<ScanOutlined />}
+                        onClick={handleRefreshFiles}
+                      >
+                        扫描
+                      </Button>
+                    </Tooltip>
                   </div>
                   <Table
                     dataSource={botFiles}
@@ -193,6 +195,7 @@ const App = () => {
                     size="small"
                     rowKey="path"
                     className="mt-4"
+                    scroll={{ x: "max-content" }}
                   />
                 </>
               ),
