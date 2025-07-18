@@ -16,6 +16,7 @@ const SettingsModal = ({
       open={visible}
       onCancel={onClose}
       footer={null}
+      width={200}
       maskClosable={false}
     >
       <Form layout="vertical">

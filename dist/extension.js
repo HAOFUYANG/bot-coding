@@ -1,6 +1,95 @@
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+
+// src/utils/insertRandomSnippet.js
+var require_insertRandomSnippet = __commonJS({
+  "src/utils/insertRandomSnippet.js"(exports2, module2) {
+    var vscode2 = require("vscode");
+    var snippets = [
+      "// TODO: optimize this function",
+      "console.log('debug info');",
+      "function helper(param) { return param * 2; }",
+      "const data = fetch('/api/data');",
+      "let total = 0;",
+      "const sum = (a, b) => a + b;",
+      "class TempClass {\n  constructor() {}\n}",
+      "try {\n  // risky code\n} catch (e) {\n  console.error(e);\n}",
+      "// FIXME: workaround for legacy browser",
+      "import fs from 'fs';",
+      "/* random filler */",
+      "const timestamp = Date.now();",
+      "if (!Array.isArray(items)) return;",
+      "const config = { mode: 'dev' };",
+      "const user = { name: 'guest', id: 0 };",
+      "let counter = 1;",
+      "while (counter < 10) counter++;",
+      "setTimeout(() => console.log('done'), 1000);",
+      "const regex = /[a-z]+/gi;",
+      "const PI = Math.PI;",
+      "for (let i = 0; i < 5; i++) console.log(i);",
+      "function noop() {}",
+      "const isValid = (x) => x != null;",
+      "const uuid = crypto.randomUUID();",
+      "async function fetchData() {\n  const res = await fetch('/api');\n}",
+      "const result = await someAsyncCall();",
+      "let cache = new Map();",
+      "const arr = [1, 2, 3].map(x => x * 2);",
+      "// HACK: skip step if missing props",
+      "const env = process.env.NODE_ENV;",
+      "function delay(ms) { return new Promise(r => setTimeout(r, ms)); }",
+      "const version = '1.0.0';",
+      "function logError(err) {\n  console.error('[ERR]', err);\n}",
+      "document.querySelector('#app').innerHTML = 'Hello';",
+      "const path = require('path');",
+      "let flag = false;",
+      "const clone = obj => JSON.parse(JSON.stringify(obj));",
+      "module.exports = { start };",
+      "import { readFileSync } from 'fs';",
+      "const userAgent = navigator.userAgent;",
+      "function once(fn) {\n  let called = false;\n  return (...args) => {\n    if (!called) {\n      called = true;\n      fn(...args);\n    }\n  };\n}",
+      "const logger = msg => console.log(`[LOG] ${msg}`);",
+      "const defaultValue = value ?? 'default';",
+      "// DEBUG: temporary log",
+      "window.addEventListener('load', () => console.log('loaded'));",
+      "function getRandomInt(max) { return Math.floor(Math.random() * max); }",
+      "const headers = new Headers({ 'Content-Type': 'application/json' });",
+      "import axios from 'axios';",
+      "function sumAll(...nums) {\n  return nums.reduce((a, b) => a + b, 0);\n}",
+      "const set = new Set();",
+      "function parseJSON(str) {\n  try { return JSON.parse(str); } catch { return null; }\n}",
+      "const token = localStorage.getItem('token');",
+      "export default function init() { console.log('init'); }",
+      "// NOTE: deprecated method below",
+      "Object.keys(obj).forEach(key => console.log(key));",
+      "const noopAsync = async () => {};",
+      "if (typeof window !== 'undefined') { console.log('browser'); }",
+      "const status = isActive ? 'ON' : 'OFF';",
+      "function debounce(fn, delay) {\n  let t;\n  return (...args) => {\n    clearTimeout(t);\n    t = setTimeout(() => fn(...args), delay);\n  };\n}",
+      "let disconnected = false;",
+      "fetch('/ping').then(r => r.text()).then(console.log);"
+    ];
+    async function insertRandomSnippet2(editor) {
+      const random = snippets[Math.floor(Math.random() * snippets.length)];
+      const lastLine = editor.document.lineCount - 1;
+      const lastLineLength = editor.document.lineAt(lastLine).text.length;
+      const position = new vscode2.Position(lastLine, lastLineLength);
+      await editor.edit((editBuilder) => {
+        editBuilder.insert(position, `
+${random}`);
+      });
+    }
+    module2.exports = {
+      insertRandomSnippet: insertRandomSnippet2
+    };
+  }
+});
+
 // src/extension.js
 var vscode = require("vscode");
 var path = require("path");
+var { insertRandomSnippet } = require_insertRandomSnippet();
 var isGenerating = false;
 var targetEditor = null;
 var outputChannel = null;
@@ -42,12 +131,24 @@ async function triggerAndAcceptInline() {
     await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("trigger inline suggestion");
     await delay(2e3);
-    await vscode.commands.executeCommand("editor.action.inlineSuggest.commit");
-    await targetEditor.document.save().then(() => {
-      outputChannel.appendLine(
-        "accept inline suggestion success and save once"
+    const currentLineCount = targetEditor.document.lineCount;
+    const generatedRatio = acceptedCount / currentLineCount;
+    const shouldAccept = Math.random() < acceptRatio / 100 - generatedRatio;
+    let didAccept = false;
+    if (shouldAccept) {
+      await vscode.commands.executeCommand(
+        "editor.action.inlineSuggest.commit"
       );
-    });
+      await targetEditor.document.save().then(() => {
+        outputChannel.appendLine(
+          "accept inline suggestion success and save once"
+        );
+      });
+      didAccept = true;
+    } else {
+      await insertRandomSnippet(targetEditor);
+      outputChannel.appendLine("insert random code block instead of accepting");
+    }
     const newLineCount = targetEditor.document.lineCount;
     let addedContent = "";
     if (newLineCount > prevLineCount) {
@@ -60,15 +161,17 @@ async function triggerAndAcceptInline() {
         addedContent = targetEditor.document.lineAt(lastLineNumber).text;
       }
     }
-    acceptedCount++;
-    acceptedContentDetails.push({
-      count: acceptedCount,
-      prevLineCount,
-      newLineCount,
-      content: addedContent.trim()
-    });
-    if (reportViewProvider) {
-      reportViewProvider.postUpdateMessage(acceptedContentDetails);
+    if (didAccept) {
+      acceptedCount++;
+      acceptedContentDetails.push({
+        count: acceptedCount,
+        prevLineCount,
+        newLineCount,
+        content: addedContent.trim()
+      });
+      if (reportViewProvider) {
+        reportViewProvider.postUpdateMessage(acceptedContentDetails);
+      }
     }
     await moveCursorToEndAndInsertNewLine(targetEditor);
     if (shouldTriggerOnEmptyLines(targetEditor, 3, 2)) {
@@ -131,12 +234,6 @@ function startInlineLoop(minDelay = 1e3, maxDelay = 2e3) {
     loopTimer = setTimeout(loop, delayMs);
   }
   loop();
-}
-function stopInlineLoop() {
-  if (loopTimer) {
-    clearTimeout(loopTimer);
-    loopTimer = null;
-  }
 }
 function activate(context) {
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
@@ -245,6 +342,15 @@ var InlineReportViewProvider = class {
     this._context = context;
     this._webviewView = null;
   }
+  //停止事件
+  postGenerationStopped() {
+    if (this._webview) {
+      this._webview.postMessage({
+        type: "GENERATION_STOPPED"
+      });
+    }
+  }
+  //获取webviewView
   resolveWebviewView(webviewView) {
     this._webview = webviewView.webview;
     const webview = webviewView.webview;
@@ -255,7 +361,6 @@ var InlineReportViewProvider = class {
       enableScripts: true,
       localResourceRoots: [mediaPath]
     };
-    console.log("process.env.NODE_ENV------- :>> ", process.env.NODE_ENV);
     const isDevMode = process.env.NODE_ENV === "development";
     if (false) {
       webview.html = `
@@ -335,9 +440,21 @@ var InlineReportViewProvider = class {
     }
   }
 };
+function stopInlineLoop() {
+  if (loopTimer) {
+    clearTimeout(loopTimer);
+    loopTimer = null;
+  }
+  if (reportViewProvider) {
+    reportViewProvider.postGenerationStopped();
+  }
+}
 function deactivate() {
   isGenerating = false;
   stopInlineLoop();
+  if (reportViewProvider) {
+    reportViewProvider.postGenerationStopped();
+  }
 }
 module.exports = {
   activate,

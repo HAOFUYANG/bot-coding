@@ -31,6 +31,10 @@ const App = () => {
         setBotFiles(botFiles);
         message.success("文件列表已更新");
       }
+      if (type === "GENERATION_STOPPED") {
+        setStartLoading(false);
+        message.success("文件已生成");
+      }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);

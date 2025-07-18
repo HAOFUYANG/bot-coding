@@ -1,4 +1,4 @@
-import { Table, Button, Popconfirm, Tooltip } from "antd";
+import { Table, Button, Flex, Popconfirm, Tooltip } from "antd";
 import { ScanOutlined } from "@ant-design/icons";
 
 const getColumns = (onOpen, onDelete) => [
@@ -7,22 +7,25 @@ const getColumns = (onOpen, onDelete) => [
   {
     title: "操作",
     key: "action",
-    width: 100,
+    width: 120,
     fixed: "right",
     render: (_, record) => (
       <>
-        <Button size="small" onClick={() => onOpen(record)}>
-          查看
-        </Button>
-
-        <Popconfirm
-          title="确定删除该文件吗？"
-          onConfirm={() => onDelete(record)}
-        >
-          <Button size="small" danger>
-            删除
-          </Button>
-        </Popconfirm>
+        <Flex gap="small" align="flex-start" vertical>
+          <Flex gap="small">
+            <Button size="small" type="primary" onClick={() => onOpen(record)}>
+              查看
+            </Button>
+            <Popconfirm
+              title="确定删除该文件吗？"
+              onConfirm={() => onDelete(record)}
+            >
+              <Button size="small" danger type="primary">
+                删除
+              </Button>
+            </Popconfirm>
+          </Flex>
+        </Flex>
       </>
     ),
   },

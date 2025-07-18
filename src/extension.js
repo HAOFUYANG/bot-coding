@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const path = require("path");
+const { insertRandomSnippet } = require("./utils/insertRandomSnippet");
 
 let isGenerating = false;
 let targetEditor = null;
@@ -49,20 +50,28 @@ async function triggerAndAcceptInline() {
     await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("trigger inline suggestion");
     await delay(2000);
-    // 打印命令(帮助-打开开发者模式就可以看到console)
-    // const commands = await vscode.commands.getCommands(true);
-    // const inline = commands.filter((cmd) =>
-    //   cmd.startsWith("editor.action.inlineSuggest")
-    // );
-    // console.log(inline);
     // 3.采纳---------> inline suggest
-    await vscode.commands.executeCommand("editor.action.inlineSuggest.commit");
-    //4.保存----------->执行一次save
-    await targetEditor.document.save().then(() => {
-      outputChannel.appendLine(
-        "accept inline suggestion success and save once"
+    // --------------------------随机采纳判断逻辑---------------------------
+    const currentLineCount = targetEditor.document.lineCount;
+    const generatedRatio = acceptedCount / currentLineCount;
+    const shouldAccept = Math.random() < acceptRatio / 100 - generatedRatio;
+    let didAccept = false;
+    if (shouldAccept) {
+      await vscode.commands.executeCommand(
+        "editor.action.inlineSuggest.commit"
       );
-    });
+      //4.保存----------->执行一次save
+      await targetEditor.document.save().then(() => {
+        outputChannel.appendLine(
+          "accept inline suggestion success and save once"
+        );
+      });
+      didAccept = true;
+    } else {
+      await insertRandomSnippet(targetEditor);
+      outputChannel.appendLine("insert random code block instead of accepting");
+    }
+
     //5.获取采纳的内容--------->通过行判断获取当前被采纳内容
     const newLineCount = targetEditor.document.lineCount;
     let addedContent = "";
@@ -78,17 +87,18 @@ async function triggerAndAcceptInline() {
         addedContent = targetEditor.document.lineAt(lastLineNumber).text;
       }
     }
-    acceptedCount++;
-    acceptedContentDetails.push({
-      count: acceptedCount,
-      prevLineCount,
-      newLineCount,
-      content: addedContent.trim(),
-    });
-    // 5.发送数据到webview
-
-    if (reportViewProvider) {
-      reportViewProvider.postUpdateMessage(acceptedContentDetails);
+    if (didAccept) {
+      acceptedCount++;
+      acceptedContentDetails.push({
+        count: acceptedCount,
+        prevLineCount,
+        newLineCount,
+        content: addedContent.trim(),
+      });
+      // 5.发送数据到webview
+      if (reportViewProvider) {
+        reportViewProvider.postUpdateMessage(acceptedContentDetails);
+      }
     }
     // 6.光标移动然后换行--------->准备下次 inline suggestion
     await moveCursorToEndAndInsertNewLine(targetEditor);
@@ -183,12 +193,7 @@ function startInlineLoop(minDelay = 1000, maxDelay = 2000) {
   }
   loop();
 }
-function stopInlineLoop() {
-  if (loopTimer) {
-    clearTimeout(loopTimer);
-    loopTimer = null;
-  }
-}
+
 function activate(context) {
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
@@ -323,7 +328,15 @@ class InlineReportViewProvider {
     this._context = context;
     this._webviewView = null;
   }
-
+  //停止事件
+  postGenerationStopped() {
+    if (this._webview) {
+      this._webview.postMessage({
+        type: "GENERATION_STOPPED",
+      });
+    }
+  }
+  //获取webviewView
   resolveWebviewView(webviewView) {
     this._webview = webviewView.webview;
     const webview = webviewView.webview;
@@ -335,9 +348,9 @@ class InlineReportViewProvider {
       enableScripts: true,
       localResourceRoots: [mediaPath],
     };
-    console.log("process.env.NODE_ENV------- :>> ", process.env.NODE_ENV);
+    // console.log("process.env.NODE_ENV------- :>> ", process.env.NODE_ENV);
     const isDevMode = process.env.NODE_ENV === "development"; // 你可以用 cross-env 设置
-    if (isDevMode) {
+    if (false) {
       // 本地开发模式直接指向 vite
       webview.html = `
    <!DOCTYPE html>
@@ -424,9 +437,21 @@ class InlineReportViewProvider {
     }
   }
 }
+function stopInlineLoop() {
+  if (loopTimer) {
+    clearTimeout(loopTimer);
+    loopTimer = null;
+  }
+  if (reportViewProvider) {
+    reportViewProvider.postGenerationStopped(); // 通知webview停止
+  }
+}
 function deactivate() {
   isGenerating = false;
   stopInlineLoop();
+  if (reportViewProvider) {
+    reportViewProvider.postGenerationStopped(); // 通知webview停止
+  }
 }
 
 module.exports = {
