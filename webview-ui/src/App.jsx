@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, ConfigProvider, message } from "antd";
-import { OrderedListOutlined, FormOutlined } from "@ant-design/icons";
+import {
+  ThunderboltOutlined,
+  CodeOutlined,
+  OrderedListOutlined,
+  FormOutlined,
+} from "@ant-design/icons";
 import ControlPanel from "./components/ControlPanel";
 import FileTable from "./components/FileTable";
 import LogTable from "./components/LogTable";
 import SettingsModal from "./components/SettingsModal";
+import ToolsTab from "./components/ToolsTab"; // 新增
 import "./style/antd.css";
 
 const vscodeApi = window.acquireVsCodeApi
@@ -14,6 +20,51 @@ const vscodeApi = window.acquireVsCodeApi
       getState: () => null,
       setState: () => {},
     };
+
+const CodingBarragePanel = ({
+  acceptedContentDetails,
+  botFiles,
+  onOpenFile,
+  onDeleteFile,
+  onRefreshFile,
+  onStart,
+  onStop,
+  loading,
+}) => (
+  <>
+    <ControlPanel onStart={onStart} onStop={onStop} loading={loading} />
+    <Tabs
+      defaultActiveKey="LOG"
+      items={[
+        {
+          key: "LOG",
+          label: (
+            <>
+              <OrderedListOutlined /> 采纳日志
+            </>
+          ),
+          children: <LogTable data={acceptedContentDetails} />,
+        },
+        {
+          key: "FILE",
+          label: (
+            <>
+              <FormOutlined /> 文件
+            </>
+          ),
+          children: (
+            <FileTable
+              data={botFiles}
+              onOpen={onOpenFile}
+              onDelete={onDeleteFile}
+              onRefresh={onRefreshFile}
+            />
+          ),
+        },
+      ]}
+    />
+  </>
+);
 
 const App = () => {
   const [acceptedContentDetails, setAcceptedContentDetails] = useState([]);
@@ -68,50 +119,48 @@ const App = () => {
       }}
     >
       <div className="container">
-        <ControlPanel
-          onStart={() => setConfigModalVisible(true)}
-          onStop={handleStopCoding}
-          loading={startLoading}
-        />
-
         <Tabs
-          defaultActiveKey="LOG"
+          defaultActiveKey="TOOLS"
           items={[
             {
-              key: "LOG",
+              key: "TOOLS",
               label: (
                 <>
-                  <OrderedListOutlined /> 采纳日志
+                  <ThunderboltOutlined /> 工具
                 </>
               ),
-              children: <LogTable data={acceptedContentDetails} />,
+              children: <ToolsTab />,
             },
             {
-              key: "FILE",
+              key: "BARRAGE",
               label: (
                 <>
-                  <FormOutlined /> 文件
+                  <CodeOutlined /> 代码
                 </>
               ),
               children: (
-                <FileTable
-                  data={botFiles}
-                  onOpen={(file) =>
+                <CodingBarragePanel
+                  acceptedContentDetails={acceptedContentDetails}
+                  botFiles={botFiles}
+                  onOpenFile={(file) =>
                     vscodeApi.postMessage({
                       command: "openBotFile",
                       path: file.path,
                     })
                   }
-                  onDelete={(file) =>
+                  onDeleteFile={(file) =>
                     vscodeApi.postMessage({
                       command: "deleteBotFile",
                       path: file.path,
                     })
                   }
-                  onRefresh={() => {
+                  onRefreshFile={() => {
                     vscodeApi.postMessage({ command: "scanBotFiles" });
                     message.info("正在扫描当前项目文件...");
                   }}
+                  onStart={() => setConfigModalVisible(true)}
+                  onStop={handleStopCoding}
+                  loading={startLoading}
                 />
               ),
             },
