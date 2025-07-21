@@ -12,14 +12,7 @@ import LogTable from "./components/LogTable";
 import SettingsModal from "./components/SettingsModal";
 import ToolsTab from "./components/ToolsTab"; // 新增
 import "./style/antd.css";
-
-const vscodeApi = window.acquireVsCodeApi
-  ? window.acquireVsCodeApi()
-  : {
-      postMessage: (...args) => console.log("[DEV MOCK postMessage]", ...args),
-      getState: () => null,
-      setState: () => {},
-    };
+import { vscodeApi } from "./utils/message";
 
 const CodingBarragePanel = ({
   acceptedContentDetails,

@@ -1,6 +1,7 @@
 const vscode = require("vscode");
 const path = require("path");
 const { insertRandomSnippet } = require("./utils/insertRandomSnippet");
+const { happyCliInit } = require("./cli");
 
 let isGenerating = false;
 let targetEditor = null;
@@ -393,11 +394,11 @@ class InlineReportViewProvider {
     }
 
     //接受消息
-    webview.onDidReceiveMessage((message) => {
+    webview.onDidReceiveMessage(async (message) => {
       console.log("message :>> ", message);
+      //代码生成
       if (message.command === "coding.start") {
         const { maxGeneratedLines, acceptRatio } = message.params;
-
         vscode.commands.executeCommand("coding.start", {
           maxGeneratedLines,
           acceptRatio,
@@ -406,6 +407,7 @@ class InlineReportViewProvider {
       if (message.command === "coding.stop") {
         vscode.commands.executeCommand("coding.stop");
       }
+      //项目文件扫描
       if (message.command === "scanBotFiles") {
         vscode.commands.executeCommand("scanBotFiles");
       }
@@ -414,6 +416,10 @@ class InlineReportViewProvider {
       }
       if (message.command === "deleteBotFile") {
         vscode.commands.executeCommand("deleteBotFile", message.path);
+      }
+      //脚手架相关
+      if (message.command === "happyCli.init") {
+        happyCliInit(message);
       }
     });
   }
