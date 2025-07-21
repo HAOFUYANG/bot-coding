@@ -9,7 +9,7 @@ lerna-debug.log*
 
 bot-coder-***
 node_modules
-
+webview-ui/node_modules
 dist
 dist-ssr
 *.local
@@ -25,4 +25,3 @@ dist-ssr
 *.sln
 *.sw?
 
-webview-ui/node_modules
