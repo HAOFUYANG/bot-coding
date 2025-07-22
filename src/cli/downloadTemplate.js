@@ -19,14 +19,18 @@ async function downloadAddTemplate(targetPath, template) {
   const installCommand = "npm";
   const installArgs = ["install", `${npmName}@${version}`];
   const cwd = getCacheDir(targetPath);
+
   await execa(installCommand, installArgs, { cwd });
 }
 
-export async function downloadTemplateCore(selectedTemplate) {
+export async function downloadTemplate(selectedTemplate) {
+  console.log("selectedTemplate :>> ", selectedTemplate);
   const { targetPath, template } = selectedTemplate;
   makeCacheDir(targetPath);
   try {
+    console.log("开始下载------ :>> ");
     await downloadAddTemplate(targetPath, template);
+    console.log("下载完成啦------ :>> ");
   } catch (err) {
     console.log("下载失败的err :>> ", err);
   }

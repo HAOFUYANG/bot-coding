@@ -1,7 +1,7 @@
 const vscode = require("vscode");
 const { createTemplateByOptions } = require("./createTemplateByOptions");
 const { downloadTemplate } = require("./downloadTemplate");
-const { installTemplateVSCode } = require("./installTemplate");
+const { installTemplate } = require("./installTemplate");
 export const happyCliInit = async (message) => {
   const { name, type, template } = message.params;
   try {
@@ -22,13 +22,11 @@ export const happyCliInit = async (message) => {
     });
     //2.下载项目模版至缓存目录
     await downloadTemplate(selectedTemplate);
-    return;
     //3.安装项目模版至项目目录
-    await installTemplate(selectedTemplate);
-    return;
+    await installTemplate(selectedTemplate, baseDir);
     vscode.commands.executeCommand(
       "vscode.openFolder",
-      vscode.Uri.file(result.targetPath),
+      vscode.Uri.file(`${baseDir}/${name}`),
       true
     );
   } catch (error) {

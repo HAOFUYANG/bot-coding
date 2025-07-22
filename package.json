@@ -65,12 +65,14 @@
     "package": "npm run build && npm run prepare:package && vsce package"
   },
   "devDependencies": {
-    "vsce": "^2.15.0",
-    "fs-extra": "^11.3.0"
+    "vsce": "^2.15.0"
   },
   "dependencies": {
     "@happy.cli/utils": "^1.0.8",
+    "ejs": "^3.1.10",
     "esbuild": "^0.25.8",
-    "execa": "^9.5.2"
+    "execa": "^9.5.2",
+    "fs-extra": "^11.3.0",
+    "path-exists": "^5.0.0"
   }
 }
