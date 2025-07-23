@@ -16,6 +16,29 @@ let reportViewProvider = null;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+async function runHappyHook() {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders || workspaceFolders.length === 0) return;
+
+  const workspacePath = workspaceFolders[0].uri.fsPath;
+  const hookPath = path.join(workspacePath, ".happy-hook.js");
+  console.log("hookPath :>> ", hookPath);
+  if (!fs.existsSync(hookPath)) return;
+
+  try {
+    const hook = require(hookPath);
+    if (hook.runInTerminal && Array.isArray(hook.runInTerminal)) {
+      const terminal = vscode.window.createTerminal("Happy CLI 自动安装");
+      terminal.show();
+      for (const cmd of hook.runInTerminal) {
+        terminal.sendText(cmd);
+      }
+    }
+    fs.unlinkSync(hookPath);
+  } catch (err) {
+    vscode.window.showErrorMessage("执行 Happy CLI Hook 失败：" + err.message);
+  }
+}
 /**
  * @description 触发内联建议并采纳。
  * @returns {Promise<void>}
@@ -50,7 +73,6 @@ async function triggerAndAcceptInline() {
     const prevLineCount = targetEditor.document.lineCount;
     await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("trigger inline suggestion");
-    await delay(2000);
     // 3.采纳---------> inline suggest
     // --------------------------随机采纳判断逻辑---------------------------
     const currentLineCount = targetEditor.document.lineCount;
@@ -396,6 +418,8 @@ class InlineReportViewProvider {
     //接受消息
     webview.onDidReceiveMessage(async (message) => {
       console.log("message :>> ", message);
+      //检查是否存在.happy-hook.js文件
+      runHappyHook();
       //代码生成
       if (message.command === "coding.start") {
         const { maxGeneratedLines, acceptRatio } = message.params;
@@ -419,7 +443,7 @@ class InlineReportViewProvider {
       }
       //脚手架相关
       if (message.command === "happyCli.init") {
-        happyCliInit(message);
+        await happyCliInit(message);
       }
     });
   }

@@ -89,5 +89,5 @@ export async function installTemplate(selectedTemplate, baseDir) {
   copyFile(targetPath, template, installDir);
   console.log("拷贝完成------- :>> ");
   //对模版进行ejs渲染
-  await ejsRender(targetPath, installDir, template, selectedTemplate);
+  // await ejsRender(targetPath, installDir, template, selectedTemplate);
 }
