@@ -56731,8 +56731,8 @@ __export(checkEnvironment_exports, {
   installHappyCli: () => installHappyCli
 });
 function checkNodeVersion2() {
-  console.log('execSync("node -v") :>> ', (0, import_child_process.execSync)("node -v"));
-  const version = (0, import_child_process.execSync)("node -v").toString().trim();
+  console.log("process.version :>> ", process.version);
+  const version = process.version;
   console.log("version :>> ", version);
   return {
     version,

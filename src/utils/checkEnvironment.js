@@ -6,8 +6,7 @@ import { execSync } from "child_process";
  * @returns
  */
 function checkNodeVersion() {
-  console.log('execSync("node -v") :>> ', execSync("node -v"));
-  const version = execSync("node -v").toString().trim();
+  const version = process.version;
   console.log("version :>> ", version);
   return {
     version,
