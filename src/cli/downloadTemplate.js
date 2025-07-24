@@ -28,10 +28,8 @@ export async function downloadTemplate(selectedTemplate) {
   const { targetPath, template } = selectedTemplate;
   makeCacheDir(targetPath);
   try {
-    console.log("开始下载------ :>> ");
     await downloadAddTemplate(targetPath, template);
-    console.log("下载完成啦------ :>> ");
   } catch (err) {
-    console.log("下载失败的err :>> ", err);
+    console.error("下载失败的err :>> ", err);
   }
 }

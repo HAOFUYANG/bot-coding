@@ -70,7 +70,9 @@ const App = () => {
   useEffect(() => {
     const handler = (event) => {
       const { type, acceptedContentDetails, botFiles } = event.data;
-      if (type === "UPDATE") setAcceptedContentDetails(acceptedContentDetails);
+      if (type === "UPDATE") {
+        setAcceptedContentDetails(acceptedContentDetails);
+      }
       if (type === "BOT_FILES") {
         setBotFiles(botFiles);
         message.success("文件列表已更新");
@@ -101,7 +103,7 @@ const App = () => {
   return (
     <ConfigProvider
       theme={{
-        token: { borderRadius: 2, fontSize: 12 },
+        token: { borderRadius: 2, fontSize: 12, size: "small" },
         components: {
           Tabs: {
             inkBarColor: "var(--vscode-editor-foreground)",

@@ -33,7 +33,6 @@ async function ejsRender(targetPath, installDir, template, selectedTemplate) {
   } = selectedTemplate;
   //执行插件
   let apiData = {};
-  console.log("1212121212 :>> ", 1212121212);
   const pluginsPath = getPluginFilePath(targetPath, template);
   if (pathExistsSync(pluginsPath)) {
   }
@@ -82,12 +81,10 @@ export async function installTemplate(selectedTemplate, baseDir) {
       fse.ensureDirSync(installDir);
     }
   } else {
-    console.log("ensureDirSync------- :>> ");
     fse.ensureDirSync(installDir);
   }
   //从targetPath中拷贝文件
   copyFile(targetPath, template, installDir);
-  console.log("拷贝完成------- :>> ");
   //对模版进行ejs渲染
   // await ejsRender(targetPath, installDir, template, selectedTemplate);
 }
