@@ -6,7 +6,7 @@ const { postMessage, Msg } = require("../core/webviewMessager");
 const path = require("path");
 const fs = require("fs");
 const { delay } = require("../utils/delay");
-
+const { checkNodeVersion } = require("./utils");
 const processStep = {
   STEP1: {
     current: 1,

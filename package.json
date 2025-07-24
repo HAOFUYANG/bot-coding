@@ -2,7 +2,7 @@
   "name": "bot-coder",
   "displayName": "A wise coding-bot, can auto write code for you, accept inline suggestions",
   "description": "auto generate && auto accept",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "publisher": "HaoFuYang",
   "icon": "icon.png",
   "engines": {

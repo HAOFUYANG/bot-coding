@@ -12,6 +12,7 @@ import {
   Space,
   Steps,
 } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { vscodeApi } from "@/utils/message";
 const { Option } = Select;
 const { Paragraph, Text } = Typography;
@@ -43,6 +44,11 @@ const ToolsTab = () => {
     },
   ]);
   const [current, setCurrent] = useState(1);
+  const [nodeCheckPassedResult, setNodeCheckPassedResult] = useState({
+    version: null,
+    result: false,
+  });
+  const [cliInstalled, setCliInstalled] = useState(false);
   const onFinish = (values) => {
     vscodeApi.postMessage({
       command: "happyCli.init",
@@ -52,17 +58,28 @@ const ToolsTab = () => {
   };
   useEffect(() => {
     const handler = (event) => {
-      console.log("event :>> ", event);
       const { type, payload } = event.data;
       if (type === "happyCli.init") {
         const { current, stepDetails } = payload;
         setCurrent(current);
         setSteps(stepDetails);
       }
+      if (type === "happyCli.checkEnvironment") {
+        const { nodeVersionCheckResult, cliInstalled } = payload;
+        console.log("nodeVersionCheckResult :>> ", nodeVersionCheckResult);
+        setNodeCheckPassedResult(nodeVersionCheckResult);
+        setCliInstalled(cliInstalled);
+      }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   }, []);
+  const checkEnvironment = () => {
+    vscodeApi.postMessage({ command: "happyCli.checkEnvironment" });
+  };
+  const handleInstallHappyCli = () => {
+    vscodeApi.postMessage({ command: "happyCli.installHappyCli " });
+  };
   return (
     <div style={{}}>
       <Collapse
@@ -77,23 +94,60 @@ const ToolsTab = () => {
             key: "1",
             label: (
               <Text strong style={{ color: token.colorPrimary }}>
-                使用Happy Cli
+                使用happy-cli
               </Text>
             ),
             children: (
               <>
                 <Space direction="vertical" style={{ display: "flex" }}>
-                  <Card title="使用前检查" size="small">
-                    <Paragraph>1.需要node版本大于18</Paragraph>
-                    <Paragraph>
-                      2.当前未安装Happy Cli,请
-                      <Button type="link" htmlType="submit">
-                        安装
+                  <Card
+                    title="使用前检查"
+                    size="small"
+                    hoverable={true}
+                    extra={
+                      <Button
+                        type="primary"
+                        size="small"
+                        onClick={checkEnvironment}
+                      >
+                        检查
                       </Button>
-                      <pre>npm install -g @happy.cli/cli</pre>
+                    }
+                  >
+                    <Paragraph>
+                      1.node版本大于18
+                      {nodeCheckPassedResult.result ? (
+                        <Text type="success" style={{ marginLeft: 8 }} strong>
+                          {nodeCheckPassedResult.version}
+                        </Text>
+                      ) : (
+                        <Text type="danger" style={{ marginLeft: 8 }} strong>
+                          <ExclamationCircleOutlined /> 当前版本
+                          {nodeCheckPassedResult.version}过低，请升级
+                        </Text>
+                      )}
+                    </Paragraph>
+                    <Paragraph>
+                      2.happy-cli
+                      {cliInstalled ? (
+                        <Text type="success" strong style={{ marginLeft: 8 }}>
+                          已安装
+                        </Text>
+                      ) : (
+                        <>
+                          <Text type="danger" strong>
+                            未安装
+                          </Text>{" "}
+                          请
+                          <Button type="link" onClick={handleInstallHappyCli}>
+                            安装
+                          </Button>
+                          或<pre>npm install -g @happy.cli/cli</pre>
+                        </>
+                      )}
                     </Paragraph>
                   </Card>
-                  <Card title="创建项目" size="small">
+                  <Card title="创建项目" size="small" hoverable={true}>
                     <Form
                       form={form}
                       size="small"

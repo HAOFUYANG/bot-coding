@@ -35,7 +35,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/utils/insertRandomSnippet.js
 var require_insertRandomSnippet = __commonJS({
   "src/utils/insertRandomSnippet.js"(exports2, module2) {
-    var vscode3 = require("vscode");
+    var vscode4 = require("vscode");
     var snippets = [
       "// TODO: optimize this function",
       "console.log('debug info');",
@@ -103,7 +103,7 @@ var require_insertRandomSnippet = __commonJS({
       const random = snippets[Math.floor(Math.random() * snippets.length)];
       const lastLine2 = editor.document.lineCount - 1;
       const lastLineLength = editor.document.lineAt(lastLine2).text.length;
-      const position = new vscode3.Position(lastLine2, lastLineLength);
+      const position = new vscode4.Position(lastLine2, lastLineLength);
       await editor.edit((editBuilder) => {
         editBuilder.insert(position, `
 ${random}`);
@@ -24082,7 +24082,7 @@ var require_window = __commonJS({
     var OperatorSubscriber_1 = require_OperatorSubscriber();
     var noop_1 = require_noop();
     var innerFrom_1 = require_innerFrom();
-    function window2(windowBoundaries) {
+    function window3(windowBoundaries) {
       return lift_1.operate(function(source, subscriber) {
         var windowSubject = new Subject_1.Subject();
         subscriber.next(windowSubject.asObservable());
@@ -24106,7 +24106,7 @@ var require_window = __commonJS({
         };
       });
     }
-    exports2.window = window2;
+    exports2.window = window3;
   }
 });
 
@@ -24212,8 +24212,8 @@ var require_windowTime = __commonJS({
         var windowRecords = [];
         var restartOnClose = false;
         var closeWindow = function(record) {
-          var window2 = record.window, subs = record.subs;
-          window2.complete();
+          var window3 = record.window, subs = record.subs;
+          window3.complete();
           subs.unsubscribe();
           arrRemove_1.arrRemove(windowRecords, record);
           restartOnClose && startWindow();
@@ -24246,8 +24246,8 @@ var require_windowTime = __commonJS({
         };
         var terminate = function(cb) {
           loop(function(_a2) {
-            var window2 = _a2.window;
-            return cb(window2);
+            var window3 = _a2.window;
+            return cb(window3);
           });
           cb(subscriber);
           subscriber.unsubscribe();
@@ -24309,12 +24309,12 @@ var require_windowToggle = __commonJS({
           subscriber.error(err);
         };
         innerFrom_1.innerFrom(openings).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(openValue) {
-          var window2 = new Subject_1.Subject();
-          windows.push(window2);
+          var window3 = new Subject_1.Subject();
+          windows.push(window3);
           var closingSubscription = new Subscription_1.Subscription();
           var closeWindow = function() {
-            arrRemove_1.arrRemove(windows, window2);
-            window2.complete();
+            arrRemove_1.arrRemove(windows, window3);
+            window3.complete();
             closingSubscription.unsubscribe();
           };
           var closingNotifier;
@@ -24324,7 +24324,7 @@ var require_windowToggle = __commonJS({
             handleError(err);
             return;
           }
-          subscriber.next(window2.asObservable());
+          subscriber.next(window3.asObservable());
           closingSubscription.add(closingNotifier.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, closeWindow, noop_1.noop, handleError)));
         }, noop_1.noop));
         source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(value) {
@@ -24372,17 +24372,17 @@ var require_windowWhen = __commonJS({
     var innerFrom_1 = require_innerFrom();
     function windowWhen(closingSelector) {
       return lift_1.operate(function(source, subscriber) {
-        var window2;
+        var window3;
         var closingSubscriber;
         var handleError = function(err) {
-          window2.error(err);
+          window3.error(err);
           subscriber.error(err);
         };
         var openWindow = function() {
           closingSubscriber === null || closingSubscriber === void 0 ? void 0 : closingSubscriber.unsubscribe();
-          window2 === null || window2 === void 0 ? void 0 : window2.complete();
-          window2 = new Subject_1.Subject();
-          subscriber.next(window2.asObservable());
+          window3 === null || window3 === void 0 ? void 0 : window3.complete();
+          window3 = new Subject_1.Subject();
+          subscriber.next(window3.asObservable());
           var closingNotifier;
           try {
             closingNotifier = innerFrom_1.innerFrom(closingSelector());
@@ -24394,13 +24394,13 @@ var require_windowWhen = __commonJS({
         };
         openWindow();
         source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(value) {
-          return window2.next(value);
+          return window3.next(value);
         }, function() {
-          window2.complete();
+          window3.complete();
           subscriber.complete();
         }, handleError, function() {
           closingSubscriber === null || closingSubscriber === void 0 ? void 0 : closingSubscriber.unsubscribe();
-          window2 = null;
+          window3 = null;
         }));
       });
     }
@@ -56527,15 +56527,19 @@ var init_installTemplate = __esm({
 // src/core/webviewMessager.js
 var require_webviewMessager = __commonJS({
   "src/core/webviewMessager.js"(exports2, module2) {
-    var Msg2 = {
+    var Msg3 = {
       //脚手架初始化
-      HAPPY_CLI_INIT: "happyCli.init"
+      HAPPY_CLI_INIT: "happyCli.init",
+      //检查node环境和脚手架是否安装
+      HAPPY_CLI_CHECK_ENVIRONMENT: "happyCli.checkEnvironment",
+      //安装脚手架
+      HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli "
     };
     var webview = null;
     function setWebview(view) {
       webview = view;
     }
-    function postMessage2(message) {
+    function postMessage3(message) {
       if (webview) {
         webview.postMessage(message);
       } else {
@@ -56543,9 +56547,9 @@ var require_webviewMessager = __commonJS({
       }
     }
     module2.exports = {
-      Msg: Msg2,
+      Msg: Msg3,
       setWebview,
-      postMessage: postMessage2
+      postMessage: postMessage3
     };
   }
 });
@@ -56563,12 +56567,18 @@ var init_delay = __esm({
   }
 });
 
+// src/cli/utils.js
+var require_utils4 = __commonJS({
+  "src/cli/utils.js"() {
+  }
+});
+
 // src/cli/index.js
 var cli_exports = {};
 __export(cli_exports, {
   happyCliInit: () => happyCliInit
 });
-var vscode, createTemplateByOptions2, downloadTemplate2, installTemplate2, postMessage, Msg, path9, fs2, delay2, processStep, happyCliInit;
+var vscode, createTemplateByOptions2, downloadTemplate2, installTemplate2, postMessage, Msg, path9, fs2, delay2, checkNodeVersion, processStep, happyCliInit;
 var init_cli = __esm({
   "src/cli/index.js"() {
     vscode = require("vscode");
@@ -56579,6 +56589,7 @@ var init_cli = __esm({
     path9 = require("path");
     fs2 = require("fs");
     ({ delay: delay2 } = (init_delay(), __toCommonJS(delay_exports)));
+    ({ checkNodeVersion } = require_utils4());
     processStep = {
       STEP1: {
         current: 1,
@@ -56712,12 +56723,56 @@ var init_cli = __esm({
   }
 });
 
+// src/utils/checkEnvironment.js
+var checkEnvironment_exports = {};
+__export(checkEnvironment_exports, {
+  checkHappyCliInstalled: () => checkHappyCliInstalled,
+  checkNodeVersion: () => checkNodeVersion2,
+  installHappyCli: () => installHappyCli
+});
+function checkNodeVersion2() {
+  console.log('execSync("node -v") :>> ', (0, import_child_process.execSync)("node -v"));
+  const version = (0, import_child_process.execSync)("node -v").toString().trim();
+  console.log("version :>> ", version);
+  return {
+    version,
+    result: parseInt(version.replace("v", "").split(".")[0]) >= 18
+  };
+}
+function checkHappyCliInstalled() {
+  try {
+    const output = (0, import_child_process.execSync)("npm list -g @happy.cli/cli").toString();
+    return output.includes("@happy.cli/cli");
+  } catch (e2) {
+    return false;
+  }
+}
+function installHappyCli() {
+  const terminal2 = vscode2.window.createTerminal("\u5B89\u88C5 Happy CLI");
+  console.log("terminal :>> ", terminal2);
+  terminal2.show();
+  terminal2.sendText("npm install -g @happy.cli/cli", true);
+}
+var vscode2, import_child_process;
+var init_checkEnvironment = __esm({
+  "src/utils/checkEnvironment.js"() {
+    vscode2 = __toESM(require("vscode"));
+    import_child_process = require("child_process");
+  }
+});
+
 // src/extension.js
-var vscode2 = require("vscode");
+var vscode3 = require("vscode");
 var path10 = require("path");
 var { insertRandomSnippet } = require_insertRandomSnippet();
 var { happyCliInit: happyCliInit2 } = (init_cli(), __toCommonJS(cli_exports));
 var messenger = require_webviewMessager();
+var { postMessage: postMessage2, Msg: Msg2 } = require_webviewMessager();
+var {
+  checkNodeVersion: checkNodeVersion3,
+  checkHappyCliInstalled: checkHappyCliInstalled2,
+  installHappyCli: installHappyCli2
+} = (init_checkEnvironment(), __toCommonJS(checkEnvironment_exports));
 var isGenerating = false;
 var targetEditor = null;
 var outputChannel = null;
@@ -56736,7 +56791,7 @@ async function triggerAndAcceptInline() {
     outputChannel.appendLine(`code generation completed, max line reached.`);
     isGenerating = false;
     stopInlineLoop();
-    vscode2.window.showInformationMessage(
+    vscode3.window.showInformationMessage(
       `code generation completed, stop coding`
     );
     targetEditor.document.save().then(() => {
@@ -56753,14 +56808,14 @@ async function triggerAndAcceptInline() {
       hasInsertedTrigger = true;
     }
     const prevLineCount = targetEditor.document.lineCount;
-    await vscode2.commands.executeCommand("editor.action.inlineSuggest.trigger");
+    await vscode3.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("trigger inline suggestion");
     const currentLineCount = targetEditor.document.lineCount;
     const generatedRatio = acceptedCount / currentLineCount;
     const shouldAccept = Math.random() < acceptRatio / 100 - generatedRatio;
     let didAccept = false;
     if (shouldAccept) {
-      await vscode2.commands.executeCommand(
+      await vscode3.commands.executeCommand(
         "editor.action.inlineSuggest.commit"
       );
       await targetEditor.document.save().then(() => {
@@ -56812,17 +56867,17 @@ async function moveCursorToEndAndInsertNewLine(editor) {
   }
   const lastLine2 = editor.document.lineCount - 1;
   const lastLineLength = editor.document.lineAt(lastLine2).text.length;
-  const endPosition = new vscode2.Position(lastLine2, lastLineLength);
-  editor.selection = new vscode2.Selection(endPosition, endPosition);
-  editor.revealRange(new vscode2.Range(endPosition, endPosition));
+  const endPosition = new vscode3.Position(lastLine2, lastLineLength);
+  editor.selection = new vscode3.Selection(endPosition, endPosition);
+  editor.revealRange(new vscode3.Range(endPosition, endPosition));
   await editor.edit((editBuilder) => {
     editBuilder.insert(endPosition, "\n");
   });
 }
 async function scanBotFilesAndUpdate(reportViewProvider2) {
-  const workspaceFolders = vscode2.workspace.workspaceFolders;
+  const workspaceFolders = vscode3.workspace.workspaceFolders;
   if (workspaceFolders && workspaceFolders.length > 0) {
-    const files = await vscode2.workspace.findFiles("**/bot-coder-*.js");
+    const files = await vscode3.workspace.findFiles("**/bot-coder-*.js");
     const result = files.map((fileUri) => ({
       name: path10.basename(fileUri.fsPath),
       path: fileUri.fsPath
@@ -56845,7 +56900,7 @@ function shouldTriggerOnEmptyLines(editor, linesCount = 3, emptyThreshold = 2) {
 async function insertTriggerWord(editor) {
   const lastLine2 = editor.document.lineCount - 1;
   const lastLineLength = editor.document.lineAt(lastLine2).text.length;
-  const endPosition = new vscode2.Position(lastLine2, lastLineLength);
+  const endPosition = new vscode3.Position(lastLine2, lastLineLength);
   await editor.edit((editBuilder) => {
     editBuilder.insert(endPosition, "\nconst getData =");
   });
@@ -56860,17 +56915,17 @@ function startInlineLoop(minDelay = 1e3, maxDelay = 2e3) {
   loop();
 }
 function activate(context) {
-  outputChannel = vscode2.window.createOutputChannel("InlineAutoGenerator");
+  outputChannel = vscode3.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
   outputChannel.show(true);
   reportViewProvider = new InlineReportViewProvider(context);
   context.subscriptions.push(
-    vscode2.window.registerWebviewViewProvider("coder-view", reportViewProvider)
+    vscode3.window.registerWebviewViewProvider("coder-view", reportViewProvider)
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("coding.start", async (args) => {
+    vscode3.commands.registerCommand("coding.start", async (args) => {
       if (isGenerating) {
-        vscode2.window.showInformationMessage("coding ...");
+        vscode3.window.showInformationMessage("coding ...");
         return;
       }
       console.log("args :>> ", args);
@@ -56879,7 +56934,7 @@ function activate(context) {
       if (reportViewProvider) {
         reportViewProvider.postUpdateMessage(acceptedContentDetails);
       }
-      const folderUri = await vscode2.window.showOpenDialog({
+      const folderUri = await vscode3.window.showOpenDialog({
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
@@ -56890,15 +56945,15 @@ function activate(context) {
       }
       const timestamp = (/* @__PURE__ */ new Date()).getTime();
       const fileName = `bot-coder-${timestamp}.js`;
-      const fileUri = vscode2.Uri.file(path10.join(folderUri[0].fsPath, fileName));
-      await vscode2.workspace.fs.writeFile(fileUri, Buffer.from("", "utf8"));
-      targetEditor = await vscode2.window.showTextDocument(fileUri);
+      const fileUri = vscode3.Uri.file(path10.join(folderUri[0].fsPath, fileName));
+      await vscode3.workspace.fs.writeFile(fileUri, Buffer.from("", "utf8"));
+      targetEditor = await vscode3.window.showTextDocument(fileUri);
       isGenerating = true;
       hasInsertedTrigger = false;
       outputChannel.appendLine(`ready to code in the ${fileName}...`);
       let maxLines = args?.maxGeneratedLines;
       if (!maxLines) {
-        const inputMaxLines = await vscode2.window.showInputBox({
+        const inputMaxLines = await vscode3.window.showInputBox({
           prompt: "\u8BF7\u8F93\u5165\u8981\u751F\u6210\u7684\u6700\u5927\u884C\u6570\uFF08\u8D85\u8FC7\u540E\u81EA\u52A8\u505C\u6B62\uFF09",
           placeHolder: "\u9ED8\u8BA41000",
           validateInput: (value) => {
@@ -56913,13 +56968,13 @@ function activate(context) {
       maxGeneratedLines = maxLines;
       acceptRatio = args?.acceptRatio ?? 30;
       startInlineLoop();
-      vscode2.window.showInformationMessage(`coding in the ${fileName}....`);
+      vscode3.window.showInformationMessage(`coding in the ${fileName}....`);
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("coding.stop", () => {
+    vscode3.commands.registerCommand("coding.stop", () => {
       if (!isGenerating) {
-        vscode2.window.showInformationMessage("doing nothing...");
+        vscode3.window.showInformationMessage("doing nothing...");
         return;
       }
       targetEditor.document.save().then(() => {
@@ -56929,34 +56984,34 @@ function activate(context) {
       targetEditor = null;
       stopInlineLoop();
       outputChannel.appendLine("stop inline generator success");
-      vscode2.window.showInformationMessage("stop inline generator success");
+      vscode3.window.showInformationMessage("stop inline generator success");
     })
   );
   context.subscriptions.push(
     //预留一个命令的注册
-    vscode2.commands.registerCommand("autoInlineGenerator.tab", async () => {
+    vscode3.commands.registerCommand("autoInlineGenerator.tab", async () => {
       outputChannel.appendLine("=== \u8981\u5F00\u59CBtab\u4E86 ===");
-      await vscode2.commands.executeCommand(
+      await vscode3.commands.executeCommand(
         "editor.action.inlineSuggest.commit"
       );
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("scanBotFiles", async () => {
+    vscode3.commands.registerCommand("scanBotFiles", async () => {
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("openBotFile", async (filePath) => {
-      const uri = vscode2.Uri.file(filePath);
-      await vscode2.window.showTextDocument(uri);
+    vscode3.commands.registerCommand("openBotFile", async (filePath) => {
+      const uri = vscode3.Uri.file(filePath);
+      await vscode3.window.showTextDocument(uri);
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("deleteBotFile", async (filePath) => {
-      const uri = vscode2.Uri.file(filePath);
-      await vscode2.workspace.fs.delete(uri);
-      vscode2.window.showInformationMessage(`\u6587\u4EF6\u5DF2\u5220\u9664: ${filePath}`);
+    vscode3.commands.registerCommand("deleteBotFile", async (filePath) => {
+      const uri = vscode3.Uri.file(filePath);
+      await vscode3.workspace.fs.delete(uri);
+      vscode3.window.showInformationMessage(`\u6587\u4EF6\u5DF2\u5220\u9664: ${filePath}`);
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
@@ -56979,7 +57034,7 @@ var InlineReportViewProvider = class {
     this._webview = webviewView.webview;
     messenger.setWebview(this._webview);
     const webview = webviewView.webview;
-    const mediaPath = vscode2.Uri.file(
+    const mediaPath = vscode3.Uri.file(
       path10.join(this._context.extensionPath, "media")
     );
     webview.options = {
@@ -57009,13 +57064,13 @@ var InlineReportViewProvider = class {
 </html>
   `;
     } else {
-      const htmlUri = vscode2.Uri.file(
+      const htmlUri = vscode3.Uri.file(
         path10.join(this._context.extensionPath, "media", "index.html")
       );
-      vscode2.workspace.fs.readFile(htmlUri).then((buffer) => {
+      vscode3.workspace.fs.readFile(htmlUri).then((buffer) => {
         let html = buffer.toString("utf8");
         html = html.replace(/(src|href)="(.+?)"/g, (_2, attr, relativePath) => {
-          const resourcePath = vscode2.Uri.file(
+          const resourcePath = vscode3.Uri.file(
             path10.join(this._context.extensionPath, "media", relativePath)
           );
           return `${attr}="${webview.asWebviewUri(resourcePath)}"`;
@@ -57027,25 +57082,39 @@ var InlineReportViewProvider = class {
       console.log("message :>> ", message);
       if (message.command === "coding.start") {
         const { maxGeneratedLines: maxGeneratedLines2, acceptRatio: acceptRatio2 } = message.params;
-        vscode2.commands.executeCommand("coding.start", {
+        vscode3.commands.executeCommand("coding.start", {
           maxGeneratedLines: maxGeneratedLines2,
           acceptRatio: acceptRatio2
         });
       }
       if (message.command === "coding.stop") {
-        vscode2.commands.executeCommand("coding.stop");
+        vscode3.commands.executeCommand("coding.stop");
       }
       if (message.command === "scanBotFiles") {
-        vscode2.commands.executeCommand("scanBotFiles");
+        vscode3.commands.executeCommand("scanBotFiles");
       }
       if (message.command === "openBotFile") {
-        vscode2.commands.executeCommand("openBotFile", message.path);
+        vscode3.commands.executeCommand("openBotFile", message.path);
       }
       if (message.command === "deleteBotFile") {
-        vscode2.commands.executeCommand("deleteBotFile", message.path);
+        vscode3.commands.executeCommand("deleteBotFile", message.path);
       }
-      if (message.command === "happyCli.init") {
+      if (message.command === Msg2.HAPPY_CLI_INIT) {
         await happyCliInit2(message);
+      }
+      if (message.command === Msg2.HAPPY_CLI_CHECK_ENVIRONMENT) {
+        const nodeVersionCheckResult = checkNodeVersion3();
+        const cliInstalled = checkHappyCliInstalled2();
+        postMessage2({
+          type: Msg2.HAPPY_CLI_CHECK_ENVIRONMENT,
+          payload: {
+            nodeVersionCheckResult,
+            cliInstalled
+          }
+        });
+      }
+      if (message.command === Msg2.HAPPY_CLI_INSTALL_CLI) {
+        installHappyCli2();
       }
     });
   }

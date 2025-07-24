@@ -6,6 +6,10 @@
 let Msg = {
   //脚手架初始化
   HAPPY_CLI_INIT: "happyCli.init",
+  //检查node环境和脚手架是否安装
+  HAPPY_CLI_CHECK_ENVIRONMENT: "happyCli.checkEnvironment",
+  //安装脚手架
+  HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli ",
 };
 let webview = null;
 

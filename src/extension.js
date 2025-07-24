@@ -3,7 +3,12 @@ const path = require("path");
 const { insertRandomSnippet } = require("./utils/insertRandomSnippet");
 const { happyCliInit } = require("./cli");
 const messenger = require("./core/webviewMessager");
-
+const { postMessage, Msg } = require("./core/webviewMessager");
+const {
+  checkNodeVersion,
+  checkHappyCliInstalled,
+  installHappyCli,
+} = require("./utils/checkEnvironment");
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -407,6 +412,7 @@ class InlineReportViewProvider {
           acceptRatio,
         });
       }
+      //代码停止
       if (message.command === "coding.stop") {
         vscode.commands.executeCommand("coding.stop");
       }
@@ -414,6 +420,7 @@ class InlineReportViewProvider {
       if (message.command === "scanBotFiles") {
         vscode.commands.executeCommand("scanBotFiles");
       }
+      //打开文件
       if (message.command === "openBotFile") {
         vscode.commands.executeCommand("openBotFile", message.path);
       }
@@ -421,8 +428,24 @@ class InlineReportViewProvider {
         vscode.commands.executeCommand("deleteBotFile", message.path);
       }
       //脚手架相关
-      if (message.command === "happyCli.init") {
+      if (message.command === Msg.HAPPY_CLI_INIT) {
         await happyCliInit(message);
+      }
+      //脚手架环境检查
+      if (message.command === Msg.HAPPY_CLI_CHECK_ENVIRONMENT) {
+        const nodeVersionCheckResult = checkNodeVersion();
+        const cliInstalled = checkHappyCliInstalled();
+        postMessage({
+          type: Msg.HAPPY_CLI_CHECK_ENVIRONMENT,
+          payload: {
+            nodeVersionCheckResult,
+            cliInstalled,
+          },
+        });
+      }
+      //脚手架安装
+      if (message.command === Msg.HAPPY_CLI_INSTALL_CLI) {
+        installHappyCli();
       }
     });
   }
