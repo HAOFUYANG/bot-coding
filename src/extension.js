@@ -8,7 +8,8 @@ const {
   checkNodeVersion,
   checkHappyCliInstalled,
   installHappyCli,
-} = require("./utils/checkEnvironment");
+  createHappyApp,
+} = require("./utils/happyCliUtils");
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -446,6 +447,10 @@ class InlineReportViewProvider {
       //脚手架安装
       if (message.command === Msg.HAPPY_CLI_INSTALL_CLI) {
         installHappyCli();
+      }
+      //使用 create-happy-app 创建应用
+      if (message.command === Msg.HAPPY_CLI_CREATE__APP) {
+        createHappyApp();
       }
     });
   }

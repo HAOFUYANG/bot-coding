@@ -56533,7 +56533,9 @@ var require_webviewMessager = __commonJS({
       //检查node环境和脚手架是否安装
       HAPPY_CLI_CHECK_ENVIRONMENT: "happyCli.checkEnvironment",
       //安装脚手架
-      HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli "
+      HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli ",
+      //使用create-happy-app方式创建应用
+      HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp"
     };
     var webview = null;
     function setWebview(view) {
@@ -56723,17 +56725,16 @@ var init_cli = __esm({
   }
 });
 
-// src/utils/checkEnvironment.js
-var checkEnvironment_exports = {};
-__export(checkEnvironment_exports, {
+// src/utils/happyCliUtils.js
+var happyCliUtils_exports = {};
+__export(happyCliUtils_exports, {
   checkHappyCliInstalled: () => checkHappyCliInstalled,
   checkNodeVersion: () => checkNodeVersion2,
+  createHappyApp: () => createHappyApp,
   installHappyCli: () => installHappyCli
 });
 function checkNodeVersion2() {
-  console.log("process.version :>> ", process.version);
-  const version = process.version;
-  console.log("version :>> ", version);
+  const version = (0, import_child_process.execSync)("node -v", { encoding: "utf-8" }).trim();
   return {
     version,
     result: parseInt(version.replace("v", "").split(".")[0]) >= 18
@@ -56753,9 +56754,17 @@ function installHappyCli() {
   terminal2.show();
   terminal2.sendText("npm install -g @happy.cli/cli", true);
 }
+function createHappyApp() {
+  const terminal2 = vscode2.window.createTerminal("Create Happy App\u6784\u5EFA\u6A21\u7248");
+  terminal2.show();
+  terminal2.sendText(
+    "npx create-happy-app my-app --type project -p template-vue",
+    true
+  );
+}
 var vscode2, import_child_process;
-var init_checkEnvironment = __esm({
-  "src/utils/checkEnvironment.js"() {
+var init_happyCliUtils = __esm({
+  "src/utils/happyCliUtils.js"() {
     vscode2 = __toESM(require("vscode"));
     import_child_process = require("child_process");
   }
@@ -56771,8 +56780,9 @@ var { postMessage: postMessage2, Msg: Msg2 } = require_webviewMessager();
 var {
   checkNodeVersion: checkNodeVersion3,
   checkHappyCliInstalled: checkHappyCliInstalled2,
-  installHappyCli: installHappyCli2
-} = (init_checkEnvironment(), __toCommonJS(checkEnvironment_exports));
+  installHappyCli: installHappyCli2,
+  createHappyApp: createHappyApp2
+} = (init_happyCliUtils(), __toCommonJS(happyCliUtils_exports));
 var isGenerating = false;
 var targetEditor = null;
 var outputChannel = null;
@@ -57115,6 +57125,9 @@ var InlineReportViewProvider = class {
       }
       if (message.command === Msg2.HAPPY_CLI_INSTALL_CLI) {
         installHappyCli2();
+      }
+      if (message.command === Msg2.HAPPY_CLI_CREATE__APP) {
+        createHappyApp2();
       }
     });
   }

@@ -80,6 +80,9 @@ const ToolsTab = () => {
   const handleInstallHappyCli = () => {
     vscodeApi.postMessage({ command: "happyCli.installHappyCli " });
   };
+  const handleCreateHappyApp = () => {
+    vscodeApi.postMessage({ command: "happyCli.createHappyApp" });
+  };
   return (
     <div style={{}}>
       <Collapse
@@ -101,7 +104,7 @@ const ToolsTab = () => {
               <>
                 <Space direction="vertical" style={{ display: "flex" }}>
                   <Card
-                    title="使用前检查"
+                    title="环境检查"
                     size="small"
                     hoverable={true}
                     extra={
@@ -127,8 +130,37 @@ const ToolsTab = () => {
                         </Text>
                       )}
                     </Paragraph>
+                  </Card>
+                  <Card
+                    title="Create Happy App方式构建"
+                    size="small"
+                    hoverable={true}
+                  >
+                    <Text type="secondary" style={{ marginLeft: 8 }}>
+                      无需安装Happy CLI，直接构建应用，使用一下命令，或者直接
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={handleCreateHappyApp}
+                      >
+                        构建
+                      </Button>
+                    </Text>
+                    <Paragraph code={true} copyable={true}>
+                      npx create-happy-app my-app --type project -p template-vue
+                    </Paragraph>
+                    <Paragraph code={true} copyable={true}>
+                      npm create happy-app@latest my-app -- --type project -p
+                      template-vue
+                    </Paragraph>
+                  </Card>
+                  <Card
+                    title="Happy Init方式构建"
+                    size="small"
+                    hoverable={true}
+                  >
                     <Paragraph>
-                      2.happy-cli
+                      happy-cli
                       {cliInstalled ? (
                         <Text type="success" strong style={{ marginLeft: 8 }}>
                           已安装
@@ -142,12 +174,13 @@ const ToolsTab = () => {
                           <Button type="link" onClick={handleInstallHappyCli}>
                             安装
                           </Button>
-                          或<pre>npm install -g @happy.cli/cli</pre>
+                          或
+                          <Paragraph code={true} copyable={true}>
+                            npm install -g @happy.cli/cli
+                          </Paragraph>
                         </>
                       )}
                     </Paragraph>
-                  </Card>
-                  <Card title="创建项目" size="small" hoverable={true}>
                     <Form
                       form={form}
                       size="small"
