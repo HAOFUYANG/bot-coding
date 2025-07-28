@@ -65,7 +65,7 @@
     "package": "npm run build && npm run prepare:package && vsce package"
   },
   "devDependencies": {
-    "vsce": "^2.15.0"
+    "@vscode/vsce": "^3.6.0"
   },
   "dependencies": {
     "@happy.cli/utils": "^1.0.8",
