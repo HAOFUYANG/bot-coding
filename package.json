@@ -1,7 +1,7 @@
 {
-  "name": "bot-coder",
-  "displayName": "A wise coding-bot, can auto write code for you, accept inline suggestions",
-  "description": "auto generate && auto accept",
+  "name": "happy-coding-vscode-extension",
+  "displayName": "some useful tools when coding,such as cli...",
+  "description": "some useful tools when coding,such as cli...",
   "version": "2.0.0",
   "publisher": "HaoFuYang",
   "icon": "icon.png",

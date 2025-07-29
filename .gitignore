@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-bot-coder-***
+custom-common-utils-***
 node_modules/
 webview-ui/node_modules/
 media/
