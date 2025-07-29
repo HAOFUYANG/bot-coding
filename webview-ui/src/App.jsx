@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Tabs, ConfigProvider, message } from "antd";
+import React, { useState, useEffect, useMemo } from "react";
+import { Tabs, ConfigProvider, message, theme } from "antd";
 import {
   ThunderboltOutlined,
   CodeOutlined,
@@ -10,9 +10,30 @@ import ControlPanel from "./components/ControlPanel";
 import FileTable from "./components/FileTable";
 import LogTable from "./components/LogTable";
 import SettingsModal from "./components/SettingsModal";
-import ToolsTab from "./components/ToolsTab"; // 新增
+import ToolsTab from "./components/ToolsTab/index"; // 新增
 import "./style/antd.css";
 import { vscodeApi } from "./utils/message";
+const { darkAlgorithm, defaultSeed, getDesignToken } = theme;
+const getTokenWithVscodeTheme = () => {
+  const bg =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--vscode-editor-background")
+      ?.trim() || "#212121";
+
+  // 修改 defaultSeed（基础 token）
+  const customSeed = {
+    ...defaultSeed,
+    colorBgBase: bg,
+  };
+
+  // 传入暗黑算法生成完整 token
+  const mergedToken = getDesignToken({
+    ...customSeed,
+    algorithm: [darkAlgorithm],
+  });
+
+  return mergedToken;
+};
 
 const CodingBarragePanel = ({
   acceptedContentDetails,
@@ -66,7 +87,7 @@ const App = () => {
   const [acceptRatio, setAcceptRatio] = useState(25);
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const [startLoading, setStartLoading] = useState(false);
-
+  const token = useMemo(() => getTokenWithVscodeTheme(), []);
   useEffect(() => {
     const handler = (event) => {
       const { type, acceptedContentDetails, botFiles } = event.data;
@@ -103,12 +124,18 @@ const App = () => {
   return (
     <ConfigProvider
       theme={{
-        token: { borderRadius: 2, fontSize: 12, size: "small" },
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorBgBase: "var(--vscode-editor-background)",
+          ...token,
+          fontSize: 12,
+          size: "small",
+        },
         components: {
           Tabs: {
-            inkBarColor: "var(--vscode-editor-foreground)",
-            itemActiveColor: "var(--vscode-editor-foreground)",
-            itemColor: "var(--vscode-disabledForeground,#fff)",
+            // inkBarColor: "var(--vscode-editor-foreground)",
+            // itemActiveColor: "var(--vscode-editor-foreground)",
+            // itemColor: "var(--vscode-disabledForeground,#fff)",
           },
         },
       }}
@@ -119,20 +146,12 @@ const App = () => {
           items={[
             {
               key: "TOOLS",
-              label: (
-                <>
-                  <ThunderboltOutlined /> 工具
-                </>
-              ),
+              label: <>脚手架</>,
               children: <ToolsTab />,
             },
             {
               key: "BARRAGE",
-              label: (
-                <>
-                  <CodeOutlined /> 代码
-                </>
-              ),
+              label: <>代码</>,
               children: (
                 <CodingBarragePanel
                   acceptedContentDetails={acceptedContentDetails}

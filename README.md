@@ -1,6 +1,6 @@
-# Bot Coder
+# Happy Coding Vscode Extension
 
-## 提供了panel界面将命令可视化，弱化了命令行的操作
+## 提供了 panel 界面将命令可视化，弱化了命令行的操作
 
 - 启动: `> Start Coding`
 - 停止: `> Stop Coding`

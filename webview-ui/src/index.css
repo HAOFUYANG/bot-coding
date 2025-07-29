@@ -12,7 +12,7 @@ body {
   min-width: 180px;
   font-size: 12px;
   min-height: 100vh;
-  background-color: var(--vscode-editor-background, #111816);
+  background-color: var(--vscode-editor-background, #212121);
 }
 
 h1 {
@@ -23,12 +23,12 @@ h1 {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: var(--vscode-editor-background);
   }
   a:hover {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: var(--vscode-editor-background);
   }
 }
