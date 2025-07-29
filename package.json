@@ -2,7 +2,7 @@
   "name": "bot-coder",
   "displayName": "A wise coding-bot, can auto write code for you, accept inline suggestions",
   "description": "auto generate && auto accept",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "publisher": "HaoFuYang",
   "icon": "icon.png",
   "engines": {
@@ -22,7 +22,7 @@
       "activitybar": [
         {
           "id": "coder-view",
-          "title": "coderView",
+          "title": "HAPPY Coding",
           "icon": "./panel.svg"
         }
       ]
@@ -33,7 +33,7 @@
           "icon": "./panel.svg",
           "type": "webview",
           "id": "coder-view",
-          "name": "Coder View"
+          "name": "Cli"
         }
       ]
     },
@@ -65,12 +65,14 @@
     "package": "npm run build && npm run prepare:package && vsce package"
   },
   "devDependencies": {
-    "vsce": "^2.15.0",
-    "fs-extra": "^11.3.0"
+    "@vscode/vsce": "^3.6.0"
   },
   "dependencies": {
     "@happy.cli/utils": "^1.0.8",
+    "ejs": "^3.1.10",
     "esbuild": "^0.25.8",
-    "execa": "^9.5.2"
+    "execa": "^9.5.2",
+    "fs-extra": "^11.3.0",
+    "path-exists": "^5.0.0"
   }
 }

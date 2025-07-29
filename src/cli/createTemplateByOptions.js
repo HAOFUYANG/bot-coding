@@ -44,16 +44,7 @@ function makeTargetPath() {
   return path.resolve(`${homedir()}/${TEMP_HOME}`, "addTemplate");
 }
 
-export async function createTemplateByOptions({
-  name,
-  type,
-  template,
-  baseDir,
-}) {
-  if (!name || !template || !type || !baseDir) {
-    throw new Error("参数不完整，必须包含 name、type、template、baseDir");
-  }
-
+export async function createTemplateByOptions({ name, type, template }) {
   const selectedTemplate = ADD_TEMPLATE.find((tpl) => tpl.value === template);
   if (!selectedTemplate) {
     throw new Error(`模板 ${template} 不存在`);
@@ -62,7 +53,7 @@ export async function createTemplateByOptions({
   const latestVersion = await getLatestVersion(selectedTemplate.npmName);
   selectedTemplate.version = latestVersion;
 
-  const targetPath = makeTargetPath(baseDir, name);
+  const targetPath = makeTargetPath();
 
   return {
     type,

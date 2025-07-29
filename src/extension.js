@@ -2,7 +2,14 @@ const vscode = require("vscode");
 const path = require("path");
 const { insertRandomSnippet } = require("./utils/insertRandomSnippet");
 const { happyCliInit } = require("./cli");
-
+const messenger = require("./core/webviewMessager");
+const { postMessage, Msg } = require("./core/webviewMessager");
+const {
+  checkNodeVersion,
+  checkHappyCliInstalled,
+  installHappyCli,
+  createHappyApp,
+} = require("./utils/happyCliUtils");
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -16,6 +23,7 @@ let reportViewProvider = null;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
 /**
  * @description 触发内联建议并采纳。
  * @returns {Promise<void>}
@@ -50,7 +58,6 @@ async function triggerAndAcceptInline() {
     const prevLineCount = targetEditor.document.lineCount;
     await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("trigger inline suggestion");
-    await delay(2000);
     // 3.采纳---------> inline suggest
     // --------------------------随机采纳判断逻辑---------------------------
     const currentLineCount = targetEditor.document.lineCount;
@@ -340,6 +347,8 @@ class InlineReportViewProvider {
   //获取webviewView
   resolveWebviewView(webviewView) {
     this._webview = webviewView.webview;
+    //消息中心注入webview
+    messenger.setWebview(this._webview); // 注入 webview
     const webview = webviewView.webview;
     const mediaPath = vscode.Uri.file(
       path.join(this._context.extensionPath, "media")
@@ -404,6 +413,7 @@ class InlineReportViewProvider {
           acceptRatio,
         });
       }
+      //代码停止
       if (message.command === "coding.stop") {
         vscode.commands.executeCommand("coding.stop");
       }
@@ -411,6 +421,7 @@ class InlineReportViewProvider {
       if (message.command === "scanBotFiles") {
         vscode.commands.executeCommand("scanBotFiles");
       }
+      //打开文件
       if (message.command === "openBotFile") {
         vscode.commands.executeCommand("openBotFile", message.path);
       }
@@ -418,8 +429,28 @@ class InlineReportViewProvider {
         vscode.commands.executeCommand("deleteBotFile", message.path);
       }
       //脚手架相关
-      if (message.command === "happyCli.init") {
-        happyCliInit(message);
+      if (message.command === Msg.HAPPY_CLI_INIT) {
+        await happyCliInit(message);
+      }
+      //脚手架环境检查
+      if (message.command === Msg.HAPPY_CLI_CHECK_ENVIRONMENT) {
+        const nodeVersionCheckResult = checkNodeVersion();
+        const cliInstalled = checkHappyCliInstalled();
+        postMessage({
+          type: Msg.HAPPY_CLI_CHECK_ENVIRONMENT,
+          payload: {
+            nodeVersionCheckResult,
+            cliInstalled,
+          },
+        });
+      }
+      //脚手架安装
+      if (message.command === Msg.HAPPY_CLI_INSTALL_CLI) {
+        installHappyCli();
+      }
+      //使用 create-happy-app 创建应用
+      if (message.command === Msg.HAPPY_CLI_CREATE__APP) {
+        createHappyApp();
       }
     });
   }
