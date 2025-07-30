@@ -220,7 +220,6 @@ function activate(context) {
         vscode.window.showInformationMessage("coding ...");
         return;
       }
-      console.log("args :>> ", args);
       acceptedContentDetails = [];
       acceptedCount = 0;
       if (reportViewProvider) {
@@ -359,7 +358,6 @@ class InlineReportViewProvider {
       enableScripts: true,
       localResourceRoots: [mediaPath],
     };
-    // console.log("process.env.NODE_ENV------- :>> ", process.env.NODE_ENV);
     const isDevMode = process.env.NODE_ENV === "development"; // 你可以用 cross-env 设置
     if (false) {
       // 本地开发模式直接指向 vite

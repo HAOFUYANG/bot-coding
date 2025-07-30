@@ -30,7 +30,6 @@ function checkHappyCliInstalled() {
  */
 function installHappyCli() {
   const terminal = vscode.window.createTerminal("安装 Happy CLI");
-  console.log("terminal :>> ", terminal);
   terminal.show();
   terminal.sendText("npm install -g @happy.cli/cli", true);
 }

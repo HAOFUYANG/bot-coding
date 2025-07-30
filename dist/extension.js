@@ -54726,7 +54726,6 @@ async function downloadAddTemplate(targetPath, template) {
   await execa(installCommand, installArgs, { cwd });
 }
 async function downloadTemplate(selectedTemplate) {
-  console.log("selectedTemplate :>> ", selectedTemplate);
   const { targetPath, template } = selectedTemplate;
   makeCacheDir(targetPath);
   try {
@@ -62249,7 +62248,7 @@ var require_webviewMessager = __commonJS({
       //检查node环境和脚手架是否安装
       HAPPY_CLI_CHECK_ENVIRONMENT: "happyCli.checkEnvironment",
       //安装脚手架
-      HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli ",
+      HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli",
       //使用create-happy-app方式创建应用
       HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp"
     };
@@ -62466,7 +62465,6 @@ function checkHappyCliInstalled() {
 }
 function installHappyCli() {
   const terminal2 = vscode2.window.createTerminal("\u5B89\u88C5 Happy CLI");
-  console.log("terminal :>> ", terminal2);
   terminal2.show();
   terminal2.sendText("npm install -g @happy.cli/cli", true);
 }
@@ -62603,7 +62601,9 @@ async function moveCursorToEndAndInsertNewLine(editor) {
 async function scanBotFilesAndUpdate(reportViewProvider2) {
   const workspaceFolders = vscode3.workspace.workspaceFolders;
   if (workspaceFolders && workspaceFolders.length > 0) {
-    const files = await vscode3.workspace.findFiles("**/bot-coder-*.js");
+    const files = await vscode3.workspace.findFiles(
+      "**/custom-common-utils-*.js"
+    );
     const result = files.map((fileUri) => ({
       name: path11.basename(fileUri.fsPath),
       path: fileUri.fsPath
@@ -62654,7 +62654,6 @@ function activate(context) {
         vscode3.window.showInformationMessage("coding ...");
         return;
       }
-      console.log("args :>> ", args);
       acceptedContentDetails = [];
       acceptedCount = 0;
       if (reportViewProvider) {
@@ -62670,7 +62669,7 @@ function activate(context) {
         return;
       }
       const timestamp = (/* @__PURE__ */ new Date()).getTime();
-      const fileName = `bot-coder-${timestamp}.js`;
+      const fileName = `custom-common-utils-${timestamp}.js`;
       const fileUri = vscode3.Uri.file(path11.join(folderUri[0].fsPath, fileName));
       await vscode3.workspace.fs.writeFile(fileUri, Buffer.from("", "utf8"));
       targetEditor = await vscode3.window.showTextDocument(fileUri);

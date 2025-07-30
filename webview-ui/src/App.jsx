@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Tabs, ConfigProvider, message, theme } from "antd";
 import {
-  ThunderboltOutlined,
-  CodeOutlined,
   OrderedListOutlined,
   FormOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import ControlPanel from "./components/ControlPanel";
 import FileTable from "./components/FileTable";
@@ -14,6 +14,7 @@ import ToolsTab from "./components/ToolsTab/index"; // 新增
 import "./style/antd.css";
 import { vscodeApi } from "./utils/message";
 const { darkAlgorithm, defaultSeed, getDesignToken } = theme;
+
 const getTokenWithVscodeTheme = () => {
   const bg =
     getComputedStyle(document.documentElement)
@@ -88,6 +89,13 @@ const App = () => {
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const [startLoading, setStartLoading] = useState(false);
   const token = useMemo(() => getTokenWithVscodeTheme(), []);
+  //添加展示隐藏tab的逻辑
+  const [clickCount, setClickCount] = useState(0);
+  //初始状态读取当前持久化数据
+  const [barrageUnlocked, setBarrageUnlocked] = useState(() => {
+    const saved = vscodeApi.getState?.();
+    return saved?.barrageUnlocked || false;
+  });
   useEffect(() => {
     const handler = (event) => {
       const { type, acceptedContentDetails, botFiles } = event.data;
@@ -120,13 +128,76 @@ const App = () => {
     vscodeApi.postMessage({ command: "coding.stop" });
     setStartLoading(false);
   };
+  const handleSecretClick = () => {
+    setClickCount((prev) => {
+      const next = prev + 1;
+      if (next >= 5) {
+        const newUnlocked = !barrageUnlocked;
+        setBarrageUnlocked(newUnlocked);
+        vscodeApi.setState?.({ barrageUnlocked: newUnlocked });
+        return 0; // reset clickCount
+      }
+      return next;
+    });
+  };
+  const extraContent = (
+    <div
+      style={{
+        width: 36,
+        height: 24,
+        cursor: "pointer",
+        opacity: 0, // 看不见
+      }}
+      onClick={handleSecretClick}
+    >
+      <EyeInvisibleOutlined />
+    </div>
+  );
+  const tabItems = [
+    {
+      key: "TOOLS",
+      label: <>脚手架</>,
+      children: <ToolsTab />,
+    },
+  ];
+
+  if (barrageUnlocked) {
+    tabItems.push({
+      key: "BARRAGE",
+      label: <>代码</>,
+      children: (
+        <CodingBarragePanel
+          acceptedContentDetails={acceptedContentDetails}
+          botFiles={botFiles}
+          onOpenFile={(file) =>
+            vscodeApi.postMessage({
+              command: "openBotFile",
+              path: file.path,
+            })
+          }
+          onDeleteFile={(file) =>
+            vscodeApi.postMessage({
+              command: "deleteBotFile",
+              path: file.path,
+            })
+          }
+          onRefreshFile={() => {
+            vscodeApi.postMessage({ command: "scanBotFiles" });
+            message.info("正在扫描当前项目文件...");
+          }}
+          onStart={() => setConfigModalVisible(true)}
+          onStop={handleStopCoding}
+          loading={startLoading}
+        />
+      ),
+    });
+  }
 
   return (
     <ConfigProvider
+      componentSize="small"
       theme={{
-        algorithm: theme.darkAlgorithm,
         token: {
-          colorBgBase: "var(--vscode-editor-background)",
           ...token,
           fontSize: 12,
           size: "small",
@@ -142,45 +213,12 @@ const App = () => {
     >
       <div className="container">
         <Tabs
+          size="middle"
           defaultActiveKey="TOOLS"
-          items={[
-            {
-              key: "TOOLS",
-              label: <>脚手架</>,
-              children: <ToolsTab />,
-            },
-            {
-              key: "BARRAGE",
-              label: <>代码</>,
-              children: (
-                <CodingBarragePanel
-                  acceptedContentDetails={acceptedContentDetails}
-                  botFiles={botFiles}
-                  onOpenFile={(file) =>
-                    vscodeApi.postMessage({
-                      command: "openBotFile",
-                      path: file.path,
-                    })
-                  }
-                  onDeleteFile={(file) =>
-                    vscodeApi.postMessage({
-                      command: "deleteBotFile",
-                      path: file.path,
-                    })
-                  }
-                  onRefreshFile={() => {
-                    vscodeApi.postMessage({ command: "scanBotFiles" });
-                    message.info("正在扫描当前项目文件...");
-                  }}
-                  onStart={() => setConfigModalVisible(true)}
-                  onStop={handleStopCoding}
-                  loading={startLoading}
-                />
-              ),
-            },
-          ]}
+          type="card"
+          tabBarExtraContent={extraContent}
+          items={tabItems}
         />
-
         <SettingsModal
           visible={configModalVisible}
           onClose={() => setConfigModalVisible(false)}
