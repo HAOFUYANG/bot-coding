@@ -9,9 +9,11 @@ let Msg = {
   //检查node环境和脚手架是否安装
   HAPPY_CLI_CHECK_ENVIRONMENT: "happyCli.checkEnvironment",
   //安装脚手架
-  HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli ",
+  HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli",
   //使用create-happy-app方式创建应用
   HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
+  //Git相关
+  GIT_ACTIONS_INIT: "gitActions.init",
 };
 let webview = null;
 

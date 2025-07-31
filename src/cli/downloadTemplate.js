@@ -24,7 +24,6 @@ async function downloadAddTemplate(targetPath, template) {
 }
 
 export async function downloadTemplate(selectedTemplate) {
-  console.log("selectedTemplate :>> ", selectedTemplate);
   const { targetPath, template } = selectedTemplate;
   makeCacheDir(targetPath);
   try {

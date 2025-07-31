@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
   Typography,
-  theme,
   Form,
+  Col,
+  Flex,
+  Row,
   Input,
   Select,
   Button,
@@ -15,22 +17,24 @@ import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { vscodeApi } from "@/utils/message";
 const { Option } = Select;
 const { Paragraph, Text } = Typography;
-
+import "./index.css";
 const templateOptions = [
   { label: "Vue-Arco-Vite模版", value: "template-vue-arco-vite" },
   { label: "Vue3模版", value: "template-vue" },
   { label: "React模版", value: "template-react" },
 ];
 
-const ToolsTab = () => {
+const CliTab = () => {
   const [form] = Form.useForm();
-  const { token } = theme.useToken();
   const [steps, setSteps] = useState([
     { title: "Waiting", description: "准备创建项目模版..." },
     { title: "Waiting", description: "项目模版下载成功" },
     { title: "Waiting", description: "拷贝模版并开始渲染..." },
     { title: "Waiting", description: "模版项目创建成功" },
   ]);
+  //环境检查loading
+  const [checking, setChecking] = useState(false);
+
   const [current, setCurrent] = useState(1);
   const [nodeCheckPassedResult, setNodeCheckPassedResult] = useState({
     version: null,
@@ -44,24 +48,44 @@ const ToolsTab = () => {
   };
 
   useEffect(() => {
+    //获取当前环境信息的缓存数据比如node和cli的信息
+    const saved = vscodeApi.getState?.();
+    const cachedEnv = saved?.cachedEnvCheck;
+    if (cachedEnv) {
+      setNodeCheckPassedResult(cachedEnv.nodeVersionCheckResult);
+      setCliInstalled(cachedEnv.cliInstalled);
+    } else {
+      runEnvironmentCheck(false);
+    }
     const handler = (event) => {
       const { type, payload } = event.data;
-      if (type === "happyCli.init") {
-        const { current, stepDetails } = payload;
-        setCurrent(current);
-        setSteps(stepDetails);
-      }
+
+      //环境插件逻辑
       if (type === "happyCli.checkEnvironment") {
         const { nodeVersionCheckResult, cliInstalled } = payload;
         setNodeCheckPassedResult(nodeVersionCheckResult);
         setCliInstalled(cliInstalled);
+        // 缓存当前检查结果
+        vscodeApi.setState?.({
+          cachedEnvCheck: { nodeVersionCheckResult, cliInstalled },
+        });
+        setChecking(false);
+      }
+      //脚手架运行逻辑
+      if (type === "happyCli.init") {
+        const { current, stepDetails } = payload;
+        setCurrent(current);
+        setSteps(stepDetails);
       }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  const checkEnvironment = () => {
+  const runEnvironmentCheck = (isManual = false) => {
+    if (isManual) {
+      setChecking(true);
+    }
     vscodeApi.postMessage({ command: "happyCli.checkEnvironment" });
   };
 
@@ -79,16 +103,26 @@ const ToolsTab = () => {
         <div className="section-body">
           <Space direction="vertical" style={{ display: "flex" }}>
             <div className="card">
-              <Divider orientation="left" size="small">
-                <Text strong>环境检查</Text>{" "}
-                <Button type="primary" size="small" onClick={checkEnvironment}>
-                  检查
-                </Button>
-              </Divider>
-
+              <Row>
+                <Col flex="auto">
+                  <Paragraph style={{ fontSize: 14 }} strong>
+                    环境检查
+                  </Paragraph>
+                </Col>
+                <Col flex="50px" style={{ textAlign: "right" }}>
+                  <Button
+                    type="primary"
+                    size="small"
+                    loading={checking}
+                    onClick={() => runEnvironmentCheck(true)}
+                  >
+                    检查
+                  </Button>
+                </Col>
+              </Row>
               <div className="card-body">
                 <Paragraph>
-                  1. node版本大于18
+                  1. nodejs版本需大于18
                   {nodeCheckPassedResult.result ? (
                     <Text type="success" style={{ marginLeft: 8 }} strong>
                       {nodeCheckPassedResult.version}
@@ -101,21 +135,29 @@ const ToolsTab = () => {
                   )}
                 </Paragraph>
               </div>
+              <Divider orientation="left" size="small" />
             </div>
 
             <div className="card">
-              <Divider orientation="left" size="small">
-                <Text strong>Create Happy App方式</Text>{" "}
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={handleCreateHappyApp}
-                >
-                  构建
-                </Button>
-              </Divider>
+              <Row>
+                <Col flex="auto">
+                  <Paragraph style={{ fontSize: 14 }} strong>
+                    Create Happy App构建
+                  </Paragraph>
+                </Col>
+                <Col flex="50px" style={{ textAlign: "right" }}>
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={handleCreateHappyApp}
+                  >
+                    构建
+                  </Button>
+                </Col>
+              </Row>
+
               <div className="card-body">
-                <Text>无需安装 Happy CLI，使用如下命令，直接构建应用</Text>
+                <Paragraph>使用以下命令，直接创建，或点击构建按钮</Paragraph>
                 <Paragraph code copyable>
                   npx create-happy-app my-app --type project -p template-vue
                 </Paragraph>
@@ -124,12 +166,35 @@ const ToolsTab = () => {
                   template-vue
                 </Paragraph>
               </div>
+              <Divider orientation="left" size="small" />
             </div>
 
             <div className="card">
-              <Divider orientation="left" size="small">
-                <Text strong>Happy Init方式构建</Text>
-              </Divider>
+              <Row>
+                <Col flex="auto">
+                  <Paragraph style={{ fontSize: 14 }} strong>
+                    Happy Init构建
+                  </Paragraph>
+                </Col>
+                <Col flex="110px" style={{ textAlign: "right" }}>
+                  <Flex gap="small" wrap>
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={handleInstallHappyCli}
+                    >
+                      安装Cli
+                    </Button>
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={handleInstallHappyCli}
+                    >
+                      升级
+                    </Button>
+                  </Flex>
+                </Col>
+              </Row>
 
               <div className="card-body">
                 <Paragraph>
@@ -139,13 +204,11 @@ const ToolsTab = () => {
                     </Text>
                   ) : (
                     <>
-                      <Text type="danger" strong>
-                        <ExclamationCircleOutlined /> 未按装 Happy CLI
-                      </Text>
-                      <Button type="link" onClick={handleInstallHappyCli}>
-                        直接安装
-                      </Button>
-                      或者使用如下命令：
+                      <Paragraph type="danger">
+                        <ExclamationCircleOutlined /> cli未安装
+                      </Paragraph>
+
+                      <Paragraph>使用如下命令安装，或点击安装按钮</Paragraph>
                       <Paragraph code copyable>
                         npm install -g @happy.cli/cli
                       </Paragraph>
@@ -189,14 +252,12 @@ const ToolsTab = () => {
                   >
                     <Select options={templateOptions} placeholder="请选择" />
                   </Form.Item>
-
                   <Form.Item>
                     <Button type="primary" htmlType="submit">
                       构建
                     </Button>
                   </Form.Item>
                 </Form>
-
                 <Steps
                   direction="vertical"
                   size="small"
@@ -206,6 +267,7 @@ const ToolsTab = () => {
                     description: step.description,
                   }))}
                 />
+                <Divider orientation="left" />
               </div>
             </div>
           </Space>
@@ -215,4 +277,4 @@ const ToolsTab = () => {
   );
 };
 
-export default ToolsTab;
+export default CliTab;

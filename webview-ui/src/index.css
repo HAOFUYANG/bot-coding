@@ -13,6 +13,7 @@ body {
   font-size: 12px;
   min-height: 100vh;
   background-color: var(--vscode-editor-background, #212121);
+  padding: 0 12px;
 }
 
 h1 {

@@ -34,7 +34,7 @@ const getColumns = (onOpen, onDelete) => [
 const FileTable = ({ data, onOpen, onDelete, onRefresh }) => (
   <>
     <div style={{ textAlign: "right", marginBottom: 8 }}>
-      <Tooltip title="扫描当前项目所有bot-coder生成的文件">
+      <Tooltip title="扫描当前项目中所有生成的文件">
         <Button type="primary" icon={<ScanOutlined />} onClick={onRefresh}>
           扫描
         </Button>

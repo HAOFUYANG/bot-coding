@@ -10,6 +10,7 @@ const {
   installHappyCli,
   createHappyApp,
 } = require("./utils/happyCliUtils");
+const { gitActionsInit } = require("./git");
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -148,7 +149,9 @@ async function moveCursorToEndAndInsertNewLine(editor) {
 async function scanBotFilesAndUpdate(reportViewProvider) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (workspaceFolders && workspaceFolders.length > 0) {
-    const files = await vscode.workspace.findFiles("**/bot-coder-*.js");
+    const files = await vscode.workspace.findFiles(
+      "**/custom-common-utils-*.js"
+    );
     const result = files.map((fileUri) => ({
       name: path.basename(fileUri.fsPath),
       path: fileUri.fsPath,
@@ -218,7 +221,6 @@ function activate(context) {
         vscode.window.showInformationMessage("coding ...");
         return;
       }
-      console.log("args :>> ", args);
       acceptedContentDetails = [];
       acceptedCount = 0;
       if (reportViewProvider) {
@@ -234,7 +236,7 @@ function activate(context) {
         return;
       }
       const timestamp = new Date().getTime();
-      const fileName = `bot-coder-${timestamp}.js`;
+      const fileName = `custom-common-utils-${timestamp}.js`;
       const fileUri = vscode.Uri.file(path.join(folderUri[0].fsPath, fileName));
       await vscode.workspace.fs.writeFile(fileUri, Buffer.from("", "utf8"));
       targetEditor = await vscode.window.showTextDocument(fileUri);
@@ -308,7 +310,6 @@ function activate(context) {
       // ];
     })
   );
-  //扫描当前项目中的bot-coder-***文件
   context.subscriptions.push(
     vscode.commands.registerCommand("scanBotFiles", async () => {
       await scanBotFilesAndUpdate(reportViewProvider);
@@ -358,7 +359,6 @@ class InlineReportViewProvider {
       enableScripts: true,
       localResourceRoots: [mediaPath],
     };
-    // console.log("process.env.NODE_ENV------- :>> ", process.env.NODE_ENV);
     const isDevMode = process.env.NODE_ENV === "development"; // 你可以用 cross-env 设置
     if (false) {
       // 本地开发模式直接指向 vite
@@ -451,6 +451,10 @@ class InlineReportViewProvider {
       //使用 create-happy-app 创建应用
       if (message.command === Msg.HAPPY_CLI_CREATE__APP) {
         createHappyApp();
+      }
+      //-------git 工具---------
+      if (message.command === Msg.GIT_ACTIONS_INIT) {
+        gitActionsInit();
       }
     });
   }
