@@ -35,7 +35,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/utils/insertRandomSnippet.js
 var require_insertRandomSnippet = __commonJS({
   "src/utils/insertRandomSnippet.js"(exports2, module2) {
-    var vscode4 = require("vscode");
+    var vscode5 = require("vscode");
     var snippets = [
       "// TODO: optimize this function",
       "console.log('debug info');",
@@ -103,7 +103,7 @@ var require_insertRandomSnippet = __commonJS({
       const random = snippets[Math.floor(Math.random() * snippets.length)];
       const lastLine2 = editor.document.lineCount - 1;
       const lastLineLength = editor.document.lineAt(lastLine2).text.length;
-      const position = new vscode4.Position(lastLine2, lastLineLength);
+      const position = new vscode5.Position(lastLine2, lastLineLength);
       await editor.edit((editBuilder) => {
         editBuilder.insert(position, `
 ${random}`);
@@ -4356,7 +4356,7 @@ var require_wrap_ansi = __commonJS({
       }
       return words.slice(0, last).join(" ") + words.slice(last).join("");
     };
-    var exec = (string, columns, options = {}) => {
+    var exec2 = (string, columns, options = {}) => {
       if (options.trim !== false && string.trim() === "") {
         return "";
       }
@@ -4425,7 +4425,7 @@ var require_wrap_ansi = __commonJS({
       return ret;
     };
     module2.exports = (string, columns, options) => {
-      return String(string).normalize().replace(/\r\n/g, "\n").split("\n").map((line) => exec(line, columns, options)).join("\n");
+      return String(string).normalize().replace(/\r\n/g, "\n").split("\n").map((line) => exec2(line, columns, options)).join("\n");
     };
   }
 });
@@ -62250,7 +62250,9 @@ var require_webviewMessager = __commonJS({
       //安装脚手架
       HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli",
       //使用create-happy-app方式创建应用
-      HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp"
+      HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
+      //Git相关
+      GIT_ACTIONS_INIT: "gitActions.init"
     };
     var webview = null;
     function setWebview(view) {
@@ -62484,8 +62486,40 @@ var init_happyCliUtils = __esm({
   }
 });
 
+// src/git/index.js
+var git_exports = {};
+__export(git_exports, {
+  gitActionsInit: () => gitActionsInit
+});
+var import_child_process2, vscode3, gitActionsInit;
+var init_git = __esm({
+  "src/git/index.js"() {
+    import_child_process2 = require("child_process");
+    vscode3 = __toESM(require("vscode"));
+    gitActionsInit = () => {
+      const folder = vscode3.workspace.workspaceFolders?.[0];
+      console.log("folder :>> ", folder);
+      if (!folder) {
+        return;
+      }
+      const cwd = folder.uri.fsPath;
+      (0, import_child_process2.exec)("git remote -v", { cwd }, (err, stdout) => {
+        if (err) {
+          console.error("\u9519\u8BEF");
+        }
+        const remotes = [
+          ...new Set(
+            stdout.split("\n").map((line) => line.split("	")[0]).filter(Boolean)
+          )
+        ];
+        console.log("remotes :>> ", remotes);
+      });
+    };
+  }
+});
+
 // src/extension.js
-var vscode3 = require("vscode");
+var vscode4 = require("vscode");
 var path11 = require("path");
 var { insertRandomSnippet } = require_insertRandomSnippet();
 var { happyCliInit: happyCliInit2 } = (init_cli(), __toCommonJS(cli_exports));
@@ -62497,6 +62531,7 @@ var {
   installHappyCli: installHappyCli2,
   createHappyApp: createHappyApp2
 } = (init_happyCliUtils(), __toCommonJS(happyCliUtils_exports));
+var { gitActionsInit: gitActionsInit2 } = (init_git(), __toCommonJS(git_exports));
 var isGenerating = false;
 var targetEditor = null;
 var outputChannel = null;
@@ -62515,7 +62550,7 @@ async function triggerAndAcceptInline() {
     outputChannel.appendLine(`code generation completed, max line reached.`);
     isGenerating = false;
     stopInlineLoop();
-    vscode3.window.showInformationMessage(
+    vscode4.window.showInformationMessage(
       `code generation completed, stop coding`
     );
     targetEditor.document.save().then(() => {
@@ -62532,14 +62567,14 @@ async function triggerAndAcceptInline() {
       hasInsertedTrigger = true;
     }
     const prevLineCount = targetEditor.document.lineCount;
-    await vscode3.commands.executeCommand("editor.action.inlineSuggest.trigger");
+    await vscode4.commands.executeCommand("editor.action.inlineSuggest.trigger");
     outputChannel.appendLine("trigger inline suggestion");
     const currentLineCount = targetEditor.document.lineCount;
     const generatedRatio = acceptedCount / currentLineCount;
     const shouldAccept = Math.random() < acceptRatio / 100 - generatedRatio;
     let didAccept = false;
     if (shouldAccept) {
-      await vscode3.commands.executeCommand(
+      await vscode4.commands.executeCommand(
         "editor.action.inlineSuggest.commit"
       );
       await targetEditor.document.save().then(() => {
@@ -62591,17 +62626,17 @@ async function moveCursorToEndAndInsertNewLine(editor) {
   }
   const lastLine2 = editor.document.lineCount - 1;
   const lastLineLength = editor.document.lineAt(lastLine2).text.length;
-  const endPosition = new vscode3.Position(lastLine2, lastLineLength);
-  editor.selection = new vscode3.Selection(endPosition, endPosition);
-  editor.revealRange(new vscode3.Range(endPosition, endPosition));
+  const endPosition = new vscode4.Position(lastLine2, lastLineLength);
+  editor.selection = new vscode4.Selection(endPosition, endPosition);
+  editor.revealRange(new vscode4.Range(endPosition, endPosition));
   await editor.edit((editBuilder) => {
     editBuilder.insert(endPosition, "\n");
   });
 }
 async function scanBotFilesAndUpdate(reportViewProvider2) {
-  const workspaceFolders = vscode3.workspace.workspaceFolders;
+  const workspaceFolders = vscode4.workspace.workspaceFolders;
   if (workspaceFolders && workspaceFolders.length > 0) {
-    const files = await vscode3.workspace.findFiles(
+    const files = await vscode4.workspace.findFiles(
       "**/custom-common-utils-*.js"
     );
     const result = files.map((fileUri) => ({
@@ -62626,7 +62661,7 @@ function shouldTriggerOnEmptyLines(editor, linesCount = 3, emptyThreshold = 2) {
 async function insertTriggerWord(editor) {
   const lastLine2 = editor.document.lineCount - 1;
   const lastLineLength = editor.document.lineAt(lastLine2).text.length;
-  const endPosition = new vscode3.Position(lastLine2, lastLineLength);
+  const endPosition = new vscode4.Position(lastLine2, lastLineLength);
   await editor.edit((editBuilder) => {
     editBuilder.insert(endPosition, "\nconst getData =");
   });
@@ -62641,17 +62676,17 @@ function startInlineLoop(minDelay = 1e3, maxDelay = 2e3) {
   loop();
 }
 function activate(context) {
-  outputChannel = vscode3.window.createOutputChannel("InlineAutoGenerator");
+  outputChannel = vscode4.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
   outputChannel.show(true);
   reportViewProvider = new InlineReportViewProvider(context);
   context.subscriptions.push(
-    vscode3.window.registerWebviewViewProvider("coder-view", reportViewProvider)
+    vscode4.window.registerWebviewViewProvider("coder-view", reportViewProvider)
   );
   context.subscriptions.push(
-    vscode3.commands.registerCommand("coding.start", async (args) => {
+    vscode4.commands.registerCommand("coding.start", async (args) => {
       if (isGenerating) {
-        vscode3.window.showInformationMessage("coding ...");
+        vscode4.window.showInformationMessage("coding ...");
         return;
       }
       acceptedContentDetails = [];
@@ -62659,7 +62694,7 @@ function activate(context) {
       if (reportViewProvider) {
         reportViewProvider.postUpdateMessage(acceptedContentDetails);
       }
-      const folderUri = await vscode3.window.showOpenDialog({
+      const folderUri = await vscode4.window.showOpenDialog({
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
@@ -62670,15 +62705,15 @@ function activate(context) {
       }
       const timestamp = (/* @__PURE__ */ new Date()).getTime();
       const fileName = `custom-common-utils-${timestamp}.js`;
-      const fileUri = vscode3.Uri.file(path11.join(folderUri[0].fsPath, fileName));
-      await vscode3.workspace.fs.writeFile(fileUri, Buffer.from("", "utf8"));
-      targetEditor = await vscode3.window.showTextDocument(fileUri);
+      const fileUri = vscode4.Uri.file(path11.join(folderUri[0].fsPath, fileName));
+      await vscode4.workspace.fs.writeFile(fileUri, Buffer.from("", "utf8"));
+      targetEditor = await vscode4.window.showTextDocument(fileUri);
       isGenerating = true;
       hasInsertedTrigger = false;
       outputChannel.appendLine(`ready to code in the ${fileName}...`);
       let maxLines = args?.maxGeneratedLines;
       if (!maxLines) {
-        const inputMaxLines = await vscode3.window.showInputBox({
+        const inputMaxLines = await vscode4.window.showInputBox({
           prompt: "\u8BF7\u8F93\u5165\u8981\u751F\u6210\u7684\u6700\u5927\u884C\u6570\uFF08\u8D85\u8FC7\u540E\u81EA\u52A8\u505C\u6B62\uFF09",
           placeHolder: "\u9ED8\u8BA41000",
           validateInput: (value) => {
@@ -62693,13 +62728,13 @@ function activate(context) {
       maxGeneratedLines = maxLines;
       acceptRatio = args?.acceptRatio ?? 30;
       startInlineLoop();
-      vscode3.window.showInformationMessage(`coding in the ${fileName}....`);
+      vscode4.window.showInformationMessage(`coding in the ${fileName}....`);
     })
   );
   context.subscriptions.push(
-    vscode3.commands.registerCommand("coding.stop", () => {
+    vscode4.commands.registerCommand("coding.stop", () => {
       if (!isGenerating) {
-        vscode3.window.showInformationMessage("doing nothing...");
+        vscode4.window.showInformationMessage("doing nothing...");
         return;
       }
       targetEditor.document.save().then(() => {
@@ -62709,34 +62744,34 @@ function activate(context) {
       targetEditor = null;
       stopInlineLoop();
       outputChannel.appendLine("stop inline generator success");
-      vscode3.window.showInformationMessage("stop inline generator success");
+      vscode4.window.showInformationMessage("stop inline generator success");
     })
   );
   context.subscriptions.push(
     //预留一个命令的注册
-    vscode3.commands.registerCommand("autoInlineGenerator.tab", async () => {
+    vscode4.commands.registerCommand("autoInlineGenerator.tab", async () => {
       outputChannel.appendLine("=== \u8981\u5F00\u59CBtab\u4E86 ===");
-      await vscode3.commands.executeCommand(
+      await vscode4.commands.executeCommand(
         "editor.action.inlineSuggest.commit"
       );
     })
   );
   context.subscriptions.push(
-    vscode3.commands.registerCommand("scanBotFiles", async () => {
+    vscode4.commands.registerCommand("scanBotFiles", async () => {
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
   context.subscriptions.push(
-    vscode3.commands.registerCommand("openBotFile", async (filePath) => {
-      const uri = vscode3.Uri.file(filePath);
-      await vscode3.window.showTextDocument(uri);
+    vscode4.commands.registerCommand("openBotFile", async (filePath) => {
+      const uri = vscode4.Uri.file(filePath);
+      await vscode4.window.showTextDocument(uri);
     })
   );
   context.subscriptions.push(
-    vscode3.commands.registerCommand("deleteBotFile", async (filePath) => {
-      const uri = vscode3.Uri.file(filePath);
-      await vscode3.workspace.fs.delete(uri);
-      vscode3.window.showInformationMessage(`\u6587\u4EF6\u5DF2\u5220\u9664: ${filePath}`);
+    vscode4.commands.registerCommand("deleteBotFile", async (filePath) => {
+      const uri = vscode4.Uri.file(filePath);
+      await vscode4.workspace.fs.delete(uri);
+      vscode4.window.showInformationMessage(`\u6587\u4EF6\u5DF2\u5220\u9664: ${filePath}`);
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
@@ -62759,7 +62794,7 @@ var InlineReportViewProvider = class {
     this._webview = webviewView.webview;
     messenger.setWebview(this._webview);
     const webview = webviewView.webview;
-    const mediaPath = vscode3.Uri.file(
+    const mediaPath = vscode4.Uri.file(
       path11.join(this._context.extensionPath, "media")
     );
     webview.options = {
@@ -62789,13 +62824,13 @@ var InlineReportViewProvider = class {
 </html>
   `;
     } else {
-      const htmlUri = vscode3.Uri.file(
+      const htmlUri = vscode4.Uri.file(
         path11.join(this._context.extensionPath, "media", "index.html")
       );
-      vscode3.workspace.fs.readFile(htmlUri).then((buffer) => {
+      vscode4.workspace.fs.readFile(htmlUri).then((buffer) => {
         let html = buffer.toString("utf8");
         html = html.replace(/(src|href)="(.+?)"/g, (_2, attr, relativePath) => {
-          const resourcePath = vscode3.Uri.file(
+          const resourcePath = vscode4.Uri.file(
             path11.join(this._context.extensionPath, "media", relativePath)
           );
           return `${attr}="${webview.asWebviewUri(resourcePath)}"`;
@@ -62807,22 +62842,22 @@ var InlineReportViewProvider = class {
       console.log("message :>> ", message);
       if (message.command === "coding.start") {
         const { maxGeneratedLines: maxGeneratedLines2, acceptRatio: acceptRatio2 } = message.params;
-        vscode3.commands.executeCommand("coding.start", {
+        vscode4.commands.executeCommand("coding.start", {
           maxGeneratedLines: maxGeneratedLines2,
           acceptRatio: acceptRatio2
         });
       }
       if (message.command === "coding.stop") {
-        vscode3.commands.executeCommand("coding.stop");
+        vscode4.commands.executeCommand("coding.stop");
       }
       if (message.command === "scanBotFiles") {
-        vscode3.commands.executeCommand("scanBotFiles");
+        vscode4.commands.executeCommand("scanBotFiles");
       }
       if (message.command === "openBotFile") {
-        vscode3.commands.executeCommand("openBotFile", message.path);
+        vscode4.commands.executeCommand("openBotFile", message.path);
       }
       if (message.command === "deleteBotFile") {
-        vscode3.commands.executeCommand("deleteBotFile", message.path);
+        vscode4.commands.executeCommand("deleteBotFile", message.path);
       }
       if (message.command === Msg2.HAPPY_CLI_INIT) {
         await happyCliInit2(message);
@@ -62843,6 +62878,9 @@ var InlineReportViewProvider = class {
       }
       if (message.command === Msg2.HAPPY_CLI_CREATE__APP) {
         createHappyApp2();
+      }
+      if (message.command === Msg2.GIT_ACTIONS_INIT) {
+        gitActionsInit2();
       }
     });
   }

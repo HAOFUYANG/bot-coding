@@ -12,6 +12,8 @@ let Msg = {
   HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli",
   //使用create-happy-app方式创建应用
   HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
+  //Git相关
+  GIT_ACTIONS_INIT: "gitActions.init",
 };
 let webview = null;
 

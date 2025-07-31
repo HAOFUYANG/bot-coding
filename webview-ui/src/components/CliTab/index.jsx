@@ -24,7 +24,7 @@ const templateOptions = [
   { label: "React模版", value: "template-react" },
 ];
 
-const ToolsTab = () => {
+const CliTab = () => {
   const [form] = Form.useForm();
   const [steps, setSteps] = useState([
     { title: "Waiting", description: "准备创建项目模版..." },
@@ -277,4 +277,4 @@ const ToolsTab = () => {
   );
 };
 
-export default ToolsTab;
+export default CliTab;

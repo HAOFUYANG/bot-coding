@@ -10,6 +10,7 @@ const {
   installHappyCli,
   createHappyApp,
 } = require("./utils/happyCliUtils");
+const { gitActionsInit } = require("./git");
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -450,6 +451,10 @@ class InlineReportViewProvider {
       //使用 create-happy-app 创建应用
       if (message.command === Msg.HAPPY_CLI_CREATE__APP) {
         createHappyApp();
+      }
+      //-------git 工具---------
+      if (message.command === Msg.GIT_ACTIONS_INIT) {
+        gitActionsInit();
       }
     });
   }

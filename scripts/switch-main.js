@@ -9,4 +9,3 @@ if (pkg.main !== "./dist/extension.js") {
 } else {
   console.log("👍 package.json main already ./dist/extension.js");
 }
-å;

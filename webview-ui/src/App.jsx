@@ -4,13 +4,13 @@ import {
   OrderedListOutlined,
   FormOutlined,
   EyeInvisibleOutlined,
-  EyeOutlined,
 } from "@ant-design/icons";
 import ControlPanel from "./components/ControlPanel";
 import FileTable from "./components/FileTable";
 import LogTable from "./components/LogTable";
 import SettingsModal from "./components/SettingsModal";
-import ToolsTab from "./components/ToolsTab/index"; // 新增
+import CliTab from "./components/CliTab/index";
+import GitTab from "./components/GitTab/index";
 import "./style/antd.css";
 import { vscodeApi } from "./utils/message";
 const { darkAlgorithm, defaultSeed, getDesignToken } = theme;
@@ -155,9 +155,14 @@ const App = () => {
   );
   const tabItems = [
     {
-      key: "TOOLS",
+      key: "CLI_TOOLS",
       label: <>脚手架</>,
-      children: <ToolsTab />,
+      children: <CliTab />,
+    },
+    {
+      key: "GIT_TOOLS",
+      label: <>git工具</>,
+      children: <GitTab />,
     },
   ];
 
@@ -214,7 +219,7 @@ const App = () => {
       <div className="container">
         <Tabs
           size="middle"
-          defaultActiveKey="TOOLS"
+          defaultActiveKey="GIT_TOOLS"
           type="card"
           tabBarExtraContent={extraContent}
           items={tabItems}
