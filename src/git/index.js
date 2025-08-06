@@ -1,5 +1,6 @@
 import { exec } from "child_process";
 import * as vscode from "vscode";
+import { postMessage, Msg } from "../core/webviewMessager";
 
 const gitActionsInit = () => {
   const folder = vscode.workspace.workspaceFolders?.[0];
@@ -20,8 +21,10 @@ const gitActionsInit = () => {
           .filter(Boolean)
       ),
     ];
-
-    console.log("remotes :>> ", remotes);
+    postMessage({
+      type: Msg.GIT_ACTIONS_INIT,
+      payload: remotes,
+    });
   });
 };
 export { gitActionsInit };

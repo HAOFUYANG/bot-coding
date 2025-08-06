@@ -5,7 +5,13 @@ const GitTab = () => {
     vscodeApi.postMessage({
       command: "gitActions.init",
     });
-    const handle = (event) => {};
+    const handle = (event) => {
+      const { type, payload } = event.data;
+      console.log("type,payload", type);
+      if (type === "gitActions.init") {
+        console.log("payload", payload);
+      }
+    };
     window.addEventListener("message", handle);
     return () => window.removeEventListener("message", handle);
   }, []);

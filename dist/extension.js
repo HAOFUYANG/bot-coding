@@ -62242,7 +62242,7 @@ var init_installTemplate = __esm({
 // src/core/webviewMessager.js
 var require_webviewMessager = __commonJS({
   "src/core/webviewMessager.js"(exports2, module2) {
-    var Msg3 = {
+    var Msg4 = {
       //脚手架初始化
       HAPPY_CLI_INIT: "happyCli.init",
       //检查node环境和脚手架是否安装
@@ -62258,7 +62258,7 @@ var require_webviewMessager = __commonJS({
     function setWebview(view) {
       webview = view;
     }
-    function postMessage3(message) {
+    function postMessage4(message) {
       if (webview) {
         webview.postMessage(message);
       } else {
@@ -62266,9 +62266,9 @@ var require_webviewMessager = __commonJS({
       }
     }
     module2.exports = {
-      Msg: Msg3,
+      Msg: Msg4,
       setWebview,
-      postMessage: postMessage3
+      postMessage: postMessage4
     };
   }
 });
@@ -62491,11 +62491,12 @@ var git_exports = {};
 __export(git_exports, {
   gitActionsInit: () => gitActionsInit
 });
-var import_child_process2, vscode3, gitActionsInit;
+var import_child_process2, vscode3, import_webviewMessager, gitActionsInit;
 var init_git = __esm({
   "src/git/index.js"() {
     import_child_process2 = require("child_process");
     vscode3 = __toESM(require("vscode"));
+    import_webviewMessager = __toESM(require_webviewMessager());
     gitActionsInit = () => {
       const folder = vscode3.workspace.workspaceFolders?.[0];
       console.log("folder :>> ", folder);
@@ -62512,6 +62513,10 @@ var init_git = __esm({
             stdout.split("\n").map((line) => line.split("	")[0]).filter(Boolean)
           )
         ];
+        (0, import_webviewMessager.postMessage)({
+          type: import_webviewMessager.Msg.GIT_ACTIONS_INIT,
+          payload: remotes
+        });
         console.log("remotes :>> ", remotes);
       });
     };
@@ -62524,7 +62529,7 @@ var path11 = require("path");
 var { insertRandomSnippet } = require_insertRandomSnippet();
 var { happyCliInit: happyCliInit2 } = (init_cli(), __toCommonJS(cli_exports));
 var messenger = require_webviewMessager();
-var { postMessage: postMessage2, Msg: Msg2 } = require_webviewMessager();
+var { postMessage: postMessage3, Msg: Msg3 } = require_webviewMessager();
 var {
   checkNodeVersion: checkNodeVersion3,
   checkHappyCliInstalled: checkHappyCliInstalled2,
@@ -62859,27 +62864,27 @@ var InlineReportViewProvider = class {
       if (message.command === "deleteBotFile") {
         vscode4.commands.executeCommand("deleteBotFile", message.path);
       }
-      if (message.command === Msg2.HAPPY_CLI_INIT) {
+      if (message.command === Msg3.HAPPY_CLI_INIT) {
         await happyCliInit2(message);
       }
-      if (message.command === Msg2.HAPPY_CLI_CHECK_ENVIRONMENT) {
+      if (message.command === Msg3.HAPPY_CLI_CHECK_ENVIRONMENT) {
         const nodeVersionCheckResult = checkNodeVersion3();
         const cliInstalled = checkHappyCliInstalled2();
-        postMessage2({
-          type: Msg2.HAPPY_CLI_CHECK_ENVIRONMENT,
+        postMessage3({
+          type: Msg3.HAPPY_CLI_CHECK_ENVIRONMENT,
           payload: {
             nodeVersionCheckResult,
             cliInstalled
           }
         });
       }
-      if (message.command === Msg2.HAPPY_CLI_INSTALL_CLI) {
+      if (message.command === Msg3.HAPPY_CLI_INSTALL_CLI) {
         installHappyCli2();
       }
-      if (message.command === Msg2.HAPPY_CLI_CREATE__APP) {
+      if (message.command === Msg3.HAPPY_CLI_CREATE__APP) {
         createHappyApp2();
       }
-      if (message.command === Msg2.GIT_ACTIONS_INIT) {
+      if (message.command === Msg3.GIT_ACTIONS_INIT) {
         gitActionsInit2();
       }
     });
