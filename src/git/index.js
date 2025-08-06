@@ -4,7 +4,6 @@ import { postMessage, Msg } from "../core/webviewMessager";
 
 const gitActionsInit = () => {
   const folder = vscode.workspace.workspaceFolders?.[0];
-  console.log("folder :>> ", folder);
   if (!folder) {
     return;
   }
@@ -27,4 +26,20 @@ const gitActionsInit = () => {
     });
   });
 };
-export { gitActionsInit };
+const commitAndPush = (message) => {
+  const { commitMessage, remoteName } = message.payload;
+  const cwd = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+  console.log("112121212", 112121212);
+  exec(
+    `git add . && git commit -m "${commitMessage}" && git push ${remoteName} HEAD`,
+    { cwd },
+    (err, stdout, stderr) => {
+      postMessage({
+        type: "Msg.COMMIT_AND_PUSH_RESULT",
+        payload: { success: !err, err: err ? stderr : stdout },
+      });
+    }
+  );
+};
+
+export { gitActionsInit, commitAndPush };

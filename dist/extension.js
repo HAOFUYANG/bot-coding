@@ -62252,7 +62252,8 @@ var require_webviewMessager = __commonJS({
       //使用create-happy-app方式创建应用
       HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
       //Git相关
-      GIT_ACTIONS_INIT: "gitActions.init"
+      GIT_ACTIONS_INIT: "gitActions.init",
+      GIT_ACTIONS_COMMIT_AND_PUSH: "gitActions.commitAndPush"
     };
     var webview = null;
     function setWebview(view) {
@@ -62489,9 +62490,10 @@ var init_happyCliUtils = __esm({
 // src/git/index.js
 var git_exports = {};
 __export(git_exports, {
+  commitAndPush: () => commitAndPush,
   gitActionsInit: () => gitActionsInit
 });
-var import_child_process2, vscode3, import_webviewMessager, gitActionsInit;
+var import_child_process2, vscode3, import_webviewMessager, gitActionsInit, commitAndPush;
 var init_git = __esm({
   "src/git/index.js"() {
     import_child_process2 = require("child_process");
@@ -62499,7 +62501,6 @@ var init_git = __esm({
     import_webviewMessager = __toESM(require_webviewMessager());
     gitActionsInit = () => {
       const folder = vscode3.workspace.workspaceFolders?.[0];
-      console.log("folder :>> ", folder);
       if (!folder) {
         return;
       }
@@ -62517,8 +62518,22 @@ var init_git = __esm({
           type: import_webviewMessager.Msg.GIT_ACTIONS_INIT,
           payload: remotes
         });
-        console.log("remotes :>> ", remotes);
       });
+    };
+    commitAndPush = (message) => {
+      const { commitMessage, remoteName } = message.payload;
+      const cwd = vscode3.workspace.workspaceFolders?.[0].uri.fsPath;
+      console.log("112121212", 112121212);
+      (0, import_child_process2.exec)(
+        `git add . && git commit -m "${commitMessage}" && git push ${remoteName} HEAD`,
+        { cwd },
+        (err, stdout, stderr) => {
+          (0, import_webviewMessager.postMessage)({
+            type: "Msg.COMMIT_AND_PUSH_RESULT",
+            payload: { success: !err, err: err ? stderr : stdout }
+          });
+        }
+      );
     };
   }
 });
@@ -62536,7 +62551,7 @@ var {
   installHappyCli: installHappyCli2,
   createHappyApp: createHappyApp2
 } = (init_happyCliUtils(), __toCommonJS(happyCliUtils_exports));
-var { gitActionsInit: gitActionsInit2 } = (init_git(), __toCommonJS(git_exports));
+var { gitActionsInit: gitActionsInit2, commitAndPush: commitAndPush2 } = (init_git(), __toCommonJS(git_exports));
 var isGenerating = false;
 var targetEditor = null;
 var outputChannel = null;
@@ -62886,6 +62901,9 @@ var InlineReportViewProvider = class {
       }
       if (message.command === Msg3.GIT_ACTIONS_INIT) {
         gitActionsInit2();
+      }
+      if (message.command === Msg3.GIT_ACTIONS_COMMIT_AND_PUSH) {
+        commitAndPush2(message);
       }
     });
   }

@@ -10,7 +10,7 @@ const {
   installHappyCli,
   createHappyApp,
 } = require("./utils/happyCliUtils");
-const { gitActionsInit } = require("./git");
+const { gitActionsInit, commitAndPush } = require("./git");
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -455,6 +455,9 @@ class InlineReportViewProvider {
       //-------git 工具---------
       if (message.command === Msg.GIT_ACTIONS_INIT) {
         gitActionsInit();
+      }
+      if (message.command === Msg.GIT_ACTIONS_COMMIT_AND_PUSH) {
+        commitAndPush(message);
       }
     });
   }

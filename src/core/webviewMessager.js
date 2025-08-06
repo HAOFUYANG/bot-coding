@@ -14,6 +14,7 @@ let Msg = {
   HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
   //Git相关
   GIT_ACTIONS_INIT: "gitActions.init",
+  GIT_ACTIONS_COMMIT_AND_PUSH: "gitActions.commitAndPush",
 };
 let webview = null;
 
