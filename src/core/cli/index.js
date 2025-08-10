@@ -2,11 +2,9 @@ const vscode = require("vscode");
 const { createTemplateByOptions } = require("./createTemplateByOptions");
 const { downloadTemplate } = require("./downloadTemplate");
 const { installTemplate } = require("./installTemplate");
-const { postMessage, Msg } = require("../core/webviewMessager");
+const { postMessage, Msg } = require("../Messager/index");
 const path = require("path");
 const fs = require("fs");
-const { delay } = require("../utils/delay");
-const { checkNodeVersion } = require("./utils");
 const processStep = {
   STEP1: {
     current: 1,

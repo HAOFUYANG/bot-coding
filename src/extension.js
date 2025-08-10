@@ -1,16 +1,16 @@
 const vscode = require("vscode");
 const path = require("path");
 const { insertRandomSnippet } = require("./utils/insertRandomSnippet");
-const { happyCliInit } = require("./cli");
-const messenger = require("./core/webviewMessager");
-const { postMessage, Msg } = require("./core/webviewMessager");
+const { happyCliInit } = require("./core/cli");
+const messager = require("./core/Messager");
+const { postMessage, Msg } = require("./core/Messager");
 const {
   checkNodeVersion,
   checkHappyCliInstalled,
   installHappyCli,
   createHappyApp,
 } = require("./utils/happyCliUtils");
-const { gitActionsInit, commitAndPush } = require("./git");
+const { gitActionsInit, commitAndPush } = require("./core/git");
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -331,6 +331,18 @@ function activate(context) {
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
+  //监听vscode的项目变化
+  vscode.workspace.onDidChangeWorkspaceFolders(async () => {
+    const folder = vscode.workspace.workspaceFolders?.[0];
+    if (folder) {
+      postMessage({
+        type: Msg.VSCODE_PROJECT_CHANGE,
+        payload: {
+          cwd: folder.uri.fsPath,
+        },
+      });
+    }
+  });
 }
 class InlineReportViewProvider {
   constructor(context) {
@@ -349,7 +361,7 @@ class InlineReportViewProvider {
   resolveWebviewView(webviewView) {
     this._webview = webviewView.webview;
     //消息中心注入webview
-    messenger.setWebview(this._webview); // 注入 webview
+    messager.setWebview(this._webview); // 注入 webview
     const webview = webviewView.webview;
     const mediaPath = vscode.Uri.file(
       path.join(this._context.extensionPath, "media")
@@ -453,7 +465,7 @@ class InlineReportViewProvider {
         createHappyApp();
       }
       //-------git 工具---------
-      if (message.command === Msg.GIT_ACTIONS_INIT) {
+      if (message.command === Msg.GIT_ACTIONS_GET_REMOTES_WITH_PATH) {
         gitActionsInit();
       }
       if (message.command === Msg.GIT_ACTIONS_COMMIT_AND_PUSH) {

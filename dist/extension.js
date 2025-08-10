@@ -17550,9 +17550,9 @@ var require_Action = __commonJS({
       function Action2(scheduler3, work) {
         return _super.call(this) || this;
       }
-      Action2.prototype.schedule = function(state, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      Action2.prototype.schedule = function(state, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
         return this;
       };
@@ -17648,10 +17648,10 @@ var require_AsyncAction = __commonJS({
         _this.pending = false;
         return _this;
       }
-      AsyncAction2.prototype.schedule = function(state, delay3) {
+      AsyncAction2.prototype.schedule = function(state, delay) {
         var _a;
-        if (delay3 === void 0) {
-          delay3 = 0;
+        if (delay === void 0) {
+          delay = 0;
         }
         if (this.closed) {
           return this;
@@ -17660,24 +17660,24 @@ var require_AsyncAction = __commonJS({
         var id = this.id;
         var scheduler3 = this.scheduler;
         if (id != null) {
-          this.id = this.recycleAsyncId(scheduler3, id, delay3);
+          this.id = this.recycleAsyncId(scheduler3, id, delay);
         }
         this.pending = true;
-        this.delay = delay3;
-        this.id = (_a = this.id) !== null && _a !== void 0 ? _a : this.requestAsyncId(scheduler3, this.id, delay3);
+        this.delay = delay;
+        this.id = (_a = this.id) !== null && _a !== void 0 ? _a : this.requestAsyncId(scheduler3, this.id, delay);
         return this;
       };
-      AsyncAction2.prototype.requestAsyncId = function(scheduler3, _id, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      AsyncAction2.prototype.requestAsyncId = function(scheduler3, _id, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        return intervalProvider_1.intervalProvider.setInterval(scheduler3.flush.bind(scheduler3, this), delay3);
+        return intervalProvider_1.intervalProvider.setInterval(scheduler3.flush.bind(scheduler3, this), delay);
       };
-      AsyncAction2.prototype.recycleAsyncId = function(_scheduler, id, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      AsyncAction2.prototype.recycleAsyncId = function(_scheduler, id, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (delay3 != null && this.delay === delay3 && this.pending === false) {
+        if (delay != null && this.delay === delay && this.pending === false) {
           return id;
         }
         if (id != null) {
@@ -17685,12 +17685,12 @@ var require_AsyncAction = __commonJS({
         }
         return void 0;
       };
-      AsyncAction2.prototype.execute = function(state, delay3) {
+      AsyncAction2.prototype.execute = function(state, delay) {
         if (this.closed) {
           return new Error("executing a cancelled action");
         }
         this.pending = false;
-        var error = this._execute(state, delay3);
+        var error = this._execute(state, delay);
         if (error) {
           return error;
         } else if (this.pending === false && this.id != null) {
@@ -17855,23 +17855,23 @@ var require_AsapAction = __commonJS({
         _this.work = work;
         return _this;
       }
-      AsapAction2.prototype.requestAsyncId = function(scheduler3, id, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      AsapAction2.prototype.requestAsyncId = function(scheduler3, id, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (delay3 !== null && delay3 > 0) {
-          return _super.prototype.requestAsyncId.call(this, scheduler3, id, delay3);
+        if (delay !== null && delay > 0) {
+          return _super.prototype.requestAsyncId.call(this, scheduler3, id, delay);
         }
         scheduler3.actions.push(this);
         return scheduler3._scheduled || (scheduler3._scheduled = immediateProvider_1.immediateProvider.setImmediate(scheduler3.flush.bind(scheduler3, void 0)));
       };
-      AsapAction2.prototype.recycleAsyncId = function(scheduler3, id, delay3) {
+      AsapAction2.prototype.recycleAsyncId = function(scheduler3, id, delay) {
         var _a;
-        if (delay3 === void 0) {
-          delay3 = 0;
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (delay3 != null ? delay3 > 0 : this.delay > 0) {
-          return _super.prototype.recycleAsyncId.call(this, scheduler3, id, delay3);
+        if (delay != null ? delay > 0 : this.delay > 0) {
+          return _super.prototype.recycleAsyncId.call(this, scheduler3, id, delay);
         }
         var actions = scheduler3.actions;
         if (id != null && ((_a = actions[actions.length - 1]) === null || _a === void 0 ? void 0 : _a.id) !== id) {
@@ -17903,11 +17903,11 @@ var require_Scheduler = __commonJS({
         this.schedulerActionCtor = schedulerActionCtor;
         this.now = now;
       }
-      Scheduler2.prototype.schedule = function(work, delay3, state) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      Scheduler2.prototype.schedule = function(work, delay, state) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        return new this.schedulerActionCtor(this, work).schedule(state, delay3);
+        return new this.schedulerActionCtor(this, work).schedule(state, delay);
       };
       Scheduler2.now = dateTimestampProvider_1.dateTimestampProvider.now;
       return Scheduler2;
@@ -18097,27 +18097,27 @@ var require_QueueAction = __commonJS({
         _this.work = work;
         return _this;
       }
-      QueueAction2.prototype.schedule = function(state, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      QueueAction2.prototype.schedule = function(state, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (delay3 > 0) {
-          return _super.prototype.schedule.call(this, state, delay3);
+        if (delay > 0) {
+          return _super.prototype.schedule.call(this, state, delay);
         }
-        this.delay = delay3;
+        this.delay = delay;
         this.state = state;
         this.scheduler.flush(this);
         return this;
       };
-      QueueAction2.prototype.execute = function(state, delay3) {
-        return delay3 > 0 || this.closed ? _super.prototype.execute.call(this, state, delay3) : this._execute(state, delay3);
+      QueueAction2.prototype.execute = function(state, delay) {
+        return delay > 0 || this.closed ? _super.prototype.execute.call(this, state, delay) : this._execute(state, delay);
       };
-      QueueAction2.prototype.requestAsyncId = function(scheduler3, id, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      QueueAction2.prototype.requestAsyncId = function(scheduler3, id, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (delay3 != null && delay3 > 0 || delay3 == null && this.delay > 0) {
-          return _super.prototype.requestAsyncId.call(this, scheduler3, id, delay3);
+        if (delay != null && delay > 0 || delay == null && this.delay > 0) {
+          return _super.prototype.requestAsyncId.call(this, scheduler3, id, delay);
         }
         scheduler3.flush(this);
         return 0;
@@ -18213,25 +18213,25 @@ var require_AnimationFrameAction = __commonJS({
         _this.work = work;
         return _this;
       }
-      AnimationFrameAction2.prototype.requestAsyncId = function(scheduler3, id, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      AnimationFrameAction2.prototype.requestAsyncId = function(scheduler3, id, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (delay3 !== null && delay3 > 0) {
-          return _super.prototype.requestAsyncId.call(this, scheduler3, id, delay3);
+        if (delay !== null && delay > 0) {
+          return _super.prototype.requestAsyncId.call(this, scheduler3, id, delay);
         }
         scheduler3.actions.push(this);
         return scheduler3._scheduled || (scheduler3._scheduled = animationFrameProvider_1.animationFrameProvider.requestAnimationFrame(function() {
           return scheduler3.flush(void 0);
         }));
       };
-      AnimationFrameAction2.prototype.recycleAsyncId = function(scheduler3, id, delay3) {
+      AnimationFrameAction2.prototype.recycleAsyncId = function(scheduler3, id, delay) {
         var _a;
-        if (delay3 === void 0) {
-          delay3 = 0;
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (delay3 != null ? delay3 > 0 : this.delay > 0) {
-          return _super.prototype.recycleAsyncId.call(this, scheduler3, id, delay3);
+        if (delay != null ? delay > 0 : this.delay > 0) {
+          return _super.prototype.recycleAsyncId.call(this, scheduler3, id, delay);
         }
         var actions = scheduler3.actions;
         if (id != null && id === scheduler3._scheduled && ((_a = actions[actions.length - 1]) === null || _a === void 0 ? void 0 : _a.id) !== id) {
@@ -18402,41 +18402,41 @@ var require_VirtualTimeScheduler = __commonJS({
         _this.index = scheduler3.index = index;
         return _this;
       }
-      VirtualAction2.prototype.schedule = function(state, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      VirtualAction2.prototype.schedule = function(state, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        if (Number.isFinite(delay3)) {
+        if (Number.isFinite(delay)) {
           if (!this.id) {
-            return _super.prototype.schedule.call(this, state, delay3);
+            return _super.prototype.schedule.call(this, state, delay);
           }
           this.active = false;
           var action = new VirtualAction2(this.scheduler, this.work);
           this.add(action);
-          return action.schedule(state, delay3);
+          return action.schedule(state, delay);
         } else {
           return Subscription_1.Subscription.EMPTY;
         }
       };
-      VirtualAction2.prototype.requestAsyncId = function(scheduler3, id, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      VirtualAction2.prototype.requestAsyncId = function(scheduler3, id, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
-        this.delay = scheduler3.frame + delay3;
+        this.delay = scheduler3.frame + delay;
         var actions = scheduler3.actions;
         actions.push(this);
         actions.sort(VirtualAction2.sortActions);
         return 1;
       };
-      VirtualAction2.prototype.recycleAsyncId = function(scheduler3, id, delay3) {
-        if (delay3 === void 0) {
-          delay3 = 0;
+      VirtualAction2.prototype.recycleAsyncId = function(scheduler3, id, delay) {
+        if (delay === void 0) {
+          delay = 0;
         }
         return void 0;
       };
-      VirtualAction2.prototype._execute = function(state, delay3) {
+      VirtualAction2.prototype._execute = function(state, delay) {
         if (this.active === true) {
-          return _super.prototype._execute.call(this, state, delay3);
+          return _super.prototype._execute.call(this, state, delay);
         }
       };
       VirtualAction2.sortActions = function(a2, b) {
@@ -19079,9 +19079,9 @@ var require_executeSchedule = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.executeSchedule = void 0;
-    function executeSchedule(parentSubscription, scheduler3, work, delay3, repeat) {
-      if (delay3 === void 0) {
-        delay3 = 0;
+    function executeSchedule(parentSubscription, scheduler3, work, delay, repeat) {
+      if (delay === void 0) {
+        delay = 0;
       }
       if (repeat === void 0) {
         repeat = false;
@@ -19089,11 +19089,11 @@ var require_executeSchedule = __commonJS({
       var scheduleSubscription = scheduler3.schedule(function() {
         work();
         if (repeat) {
-          parentSubscription.add(this.schedule(null, delay3));
+          parentSubscription.add(this.schedule(null, delay));
         } else {
           this.unsubscribe();
         }
-      }, delay3);
+      }, delay);
       parentSubscription.add(scheduleSubscription);
       if (!repeat) {
         return scheduleSubscription;
@@ -19112,23 +19112,23 @@ var require_observeOn = __commonJS({
     var executeSchedule_1 = require_executeSchedule();
     var lift_1 = require_lift();
     var OperatorSubscriber_1 = require_OperatorSubscriber();
-    function observeOn(scheduler3, delay3) {
-      if (delay3 === void 0) {
-        delay3 = 0;
+    function observeOn(scheduler3, delay) {
+      if (delay === void 0) {
+        delay = 0;
       }
       return lift_1.operate(function(source, subscriber) {
         source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(value) {
           return executeSchedule_1.executeSchedule(subscriber, scheduler3, function() {
             return subscriber.next(value);
-          }, delay3);
+          }, delay);
         }, function() {
           return executeSchedule_1.executeSchedule(subscriber, scheduler3, function() {
             return subscriber.complete();
-          }, delay3);
+          }, delay);
         }, function(err) {
           return executeSchedule_1.executeSchedule(subscriber, scheduler3, function() {
             return subscriber.error(err);
-          }, delay3);
+          }, delay);
         }));
       });
     }
@@ -19143,14 +19143,14 @@ var require_subscribeOn = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.subscribeOn = void 0;
     var lift_1 = require_lift();
-    function subscribeOn(scheduler3, delay3) {
-      if (delay3 === void 0) {
-        delay3 = 0;
+    function subscribeOn(scheduler3, delay) {
+      if (delay === void 0) {
+        delay = 0;
       }
       return lift_1.operate(function(source, subscriber) {
         subscriber.add(scheduler3.schedule(function() {
           return source.subscribe(subscriber);
-        }, delay3));
+        }, delay));
       });
     }
     exports2.subscribeOn = subscribeOn;
@@ -19671,7 +19671,7 @@ var require_timeout = __commonJS({
         var timerSubscription;
         var lastValue = null;
         var seen = 0;
-        var startTimer = function(delay3) {
+        var startTimer = function(delay) {
           timerSubscription = executeSchedule_1.executeSchedule(subscriber, scheduler3, function() {
             try {
               originalSourceSubscription.unsubscribe();
@@ -19683,7 +19683,7 @@ var require_timeout = __commonJS({
             } catch (err) {
               subscriber.error(err);
             }
-          }, delay3);
+          }, delay);
         };
         originalSourceSubscription = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(value) {
           timerSubscription === null || timerSubscription === void 0 ? void 0 : timerSubscription.unsubscribe();
@@ -22023,7 +22023,7 @@ var require_delay = __commonJS({
     var async_1 = require_async();
     var delayWhen_1 = require_delayWhen();
     var timer_1 = require_timer();
-    function delay3(due, scheduler3) {
+    function delay(due, scheduler3) {
       if (scheduler3 === void 0) {
         scheduler3 = async_1.asyncScheduler;
       }
@@ -22032,7 +22032,7 @@ var require_delay = __commonJS({
         return duration;
       });
     }
-    exports2.delay = delay3;
+    exports2.delay = delay;
   }
 });
 
@@ -23114,10 +23114,10 @@ var require_repeat = __commonJS({
     function repeat(countOrConfig) {
       var _a;
       var count2 = Infinity;
-      var delay3;
+      var delay;
       if (countOrConfig != null) {
         if (typeof countOrConfig === "object") {
-          _a = countOrConfig.count, count2 = _a === void 0 ? Infinity : _a, delay3 = countOrConfig.delay;
+          _a = countOrConfig.count, count2 = _a === void 0 ? Infinity : _a, delay = countOrConfig.delay;
         } else {
           count2 = countOrConfig;
         }
@@ -23130,8 +23130,8 @@ var require_repeat = __commonJS({
         var resubscribe = function() {
           sourceSub === null || sourceSub === void 0 ? void 0 : sourceSub.unsubscribe();
           sourceSub = null;
-          if (delay3 != null) {
-            var notifier = typeof delay3 === "number" ? timer_1.timer(delay3) : innerFrom_1.innerFrom(delay3(soFar));
+          if (delay != null) {
+            var notifier = typeof delay === "number" ? timer_1.timer(delay) : innerFrom_1.innerFrom(delay(soFar));
             var notifierSubscriber_1 = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function() {
               notifierSubscriber_1.unsubscribe();
               subscribeToSource();
@@ -23244,7 +23244,7 @@ var require_retry = __commonJS({
           count: configOrCount
         };
       }
-      var _a = config.count, count2 = _a === void 0 ? Infinity : _a, delay3 = config.delay, _b = config.resetOnSuccess, resetOnSuccess = _b === void 0 ? false : _b;
+      var _a = config.count, count2 = _a === void 0 ? Infinity : _a, delay = config.delay, _b = config.resetOnSuccess, resetOnSuccess = _b === void 0 ? false : _b;
       return count2 <= 0 ? identity_1.identity : lift_1.operate(function(source, subscriber) {
         var soFar = 0;
         var innerSub;
@@ -23266,8 +23266,8 @@ var require_retry = __commonJS({
                   syncUnsub = true;
                 }
               };
-              if (delay3 != null) {
-                var notifier = typeof delay3 === "number" ? timer_1.timer(delay3) : innerFrom_1.innerFrom(delay3(err, soFar));
+              if (delay != null) {
+                var notifier = typeof delay === "number" ? timer_1.timer(delay) : innerFrom_1.innerFrom(delay(err, soFar));
                 var notifierSubscriber_1 = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function() {
                   notifierSubscriber_1.unsubscribe();
                   resub_1();
@@ -44550,7 +44550,7 @@ var init_lib = __esm({
   }
 });
 
-// src/cli/createTemplateByOptions.js
+// src/core/cli/createTemplateByOptions.js
 var createTemplateByOptions_exports = {};
 __export(createTemplateByOptions_exports, {
   createTemplateByOptions: () => createTemplateByOptions
@@ -44575,7 +44575,7 @@ async function createTemplateByOptions({ name, type, template }) {
 }
 var import_node_os3, import_node_path, TEMP_HOME, ADD_TEMPLATE;
 var init_createTemplateByOptions = __esm({
-  "src/cli/createTemplateByOptions.js"() {
+  "src/core/cli/createTemplateByOptions.js"() {
     init_lib();
     import_node_os3 = require("node:os");
     import_node_path = __toESM(require("node:path"));
@@ -54704,7 +54704,7 @@ var init_execa = __esm({
   }
 });
 
-// src/cli/downloadTemplate.js
+// src/core/cli/downloadTemplate.js
 var downloadTemplate_exports = {};
 __export(downloadTemplate_exports, {
   downloadTemplate: () => downloadTemplate
@@ -54736,7 +54736,7 @@ async function downloadTemplate(selectedTemplate) {
 }
 var import_node_path7, import_fs_extra;
 var init_downloadTemplate = __esm({
-  "src/cli/downloadTemplate.js"() {
+  "src/core/cli/downloadTemplate.js"() {
     import_node_path7 = __toESM(require("node:path"));
     init_path_exists();
     import_fs_extra = __toESM(require_lib5());
@@ -62193,7 +62193,7 @@ var init_esm21 = __esm({
   }
 });
 
-// src/cli/installTemplate.js
+// src/core/cli/installTemplate.js
 var installTemplate_exports = {};
 __export(installTemplate_exports, {
   installTemplate: () => installTemplate
@@ -62230,7 +62230,7 @@ async function installTemplate(selectedTemplate, baseDir) {
 }
 var import_fs_extra2, import_node_path9, import_ejs;
 var init_installTemplate = __esm({
-  "src/cli/installTemplate.js"() {
+  "src/core/cli/installTemplate.js"() {
     import_fs_extra2 = __toESM(require_lib5());
     import_node_path9 = __toESM(require("node:path"));
     init_path_exists();
@@ -62239,9 +62239,9 @@ var init_installTemplate = __esm({
   }
 });
 
-// src/core/webviewMessager.js
-var require_webviewMessager = __commonJS({
-  "src/core/webviewMessager.js"(exports2, module2) {
+// src/core/Messager/index.js
+var require_Messager = __commonJS({
+  "src/core/Messager/index.js"(exports2, module2) {
     var Msg4 = {
       //脚手架初始化
       HAPPY_CLI_INIT: "happyCli.init",
@@ -62252,7 +62252,7 @@ var require_webviewMessager = __commonJS({
       //使用create-happy-app方式创建应用
       HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
       //Git相关
-      GIT_ACTIONS_INIT: "gitActions.init",
+      GIT_ACTIONS_GET_REMOTES_WITH_PATH: "gitActions.getRemotesWithPath",
       GIT_ACTIONS_COMMIT_AND_PUSH: "gitActions.commitAndPush"
     };
     var webview = null;
@@ -62274,42 +62274,21 @@ var require_webviewMessager = __commonJS({
   }
 });
 
-// src/utils/delay.js
-var delay_exports = {};
-__export(delay_exports, {
-  delay: () => delay
-});
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-var init_delay = __esm({
-  "src/utils/delay.js"() {
-  }
-});
-
-// src/cli/utils.js
-var require_utils4 = __commonJS({
-  "src/cli/utils.js"() {
-  }
-});
-
-// src/cli/index.js
+// src/core/cli/index.js
 var cli_exports = {};
 __export(cli_exports, {
   happyCliInit: () => happyCliInit
 });
-var vscode, createTemplateByOptions2, downloadTemplate2, installTemplate2, postMessage, Msg, path10, fs2, delay2, checkNodeVersion, processStep, happyCliInit;
+var vscode, createTemplateByOptions2, downloadTemplate2, installTemplate2, postMessage, Msg, path10, fs2, processStep, happyCliInit;
 var init_cli = __esm({
-  "src/cli/index.js"() {
+  "src/core/cli/index.js"() {
     vscode = require("vscode");
     ({ createTemplateByOptions: createTemplateByOptions2 } = (init_createTemplateByOptions(), __toCommonJS(createTemplateByOptions_exports)));
     ({ downloadTemplate: downloadTemplate2 } = (init_downloadTemplate(), __toCommonJS(downloadTemplate_exports)));
     ({ installTemplate: installTemplate2 } = (init_installTemplate(), __toCommonJS(installTemplate_exports)));
-    ({ postMessage, Msg } = require_webviewMessager());
+    ({ postMessage, Msg } = require_Messager());
     path10 = require("path");
     fs2 = require("fs");
-    ({ delay: delay2 } = (init_delay(), __toCommonJS(delay_exports)));
-    ({ checkNodeVersion } = require_utils4());
     processStep = {
       STEP1: {
         current: 1,
@@ -62447,11 +62426,11 @@ var init_cli = __esm({
 var happyCliUtils_exports = {};
 __export(happyCliUtils_exports, {
   checkHappyCliInstalled: () => checkHappyCliInstalled,
-  checkNodeVersion: () => checkNodeVersion2,
+  checkNodeVersion: () => checkNodeVersion,
   createHappyApp: () => createHappyApp,
   installHappyCli: () => installHappyCli
 });
-function checkNodeVersion2() {
+function checkNodeVersion() {
   const version = (0, import_child_process.execSync)("node -v", { encoding: "utf-8" }).trim();
   return {
     version,
@@ -62487,18 +62466,18 @@ var init_happyCliUtils = __esm({
   }
 });
 
-// src/git/index.js
+// src/core/git/index.js
 var git_exports = {};
 __export(git_exports, {
   commitAndPush: () => commitAndPush,
   gitActionsInit: () => gitActionsInit
 });
-var import_child_process2, vscode3, import_webviewMessager, gitActionsInit, commitAndPush;
+var import_child_process2, vscode3, import_Messager, gitActionsInit, commitAndPush;
 var init_git = __esm({
-  "src/git/index.js"() {
+  "src/core/git/index.js"() {
     import_child_process2 = require("child_process");
     vscode3 = __toESM(require("vscode"));
-    import_webviewMessager = __toESM(require_webviewMessager());
+    import_Messager = __toESM(require_Messager());
     gitActionsInit = () => {
       const folder = vscode3.workspace.workspaceFolders?.[0];
       if (!folder) {
@@ -62509,27 +62488,26 @@ var init_git = __esm({
         if (err) {
           console.error("\u9519\u8BEF");
         }
-        const remotes = [
-          ...new Set(
-            stdout.split("\n").map((line) => line.split("	")[0]).filter(Boolean)
-          )
-        ];
-        (0, import_webviewMessager.postMessage)({
-          type: import_webviewMessager.Msg.GIT_ACTIONS_INIT,
-          payload: remotes
+        const remotes = stdout.split("\n").map((line) => line.split("	")[0]).filter(Boolean);
+        (0, import_Messager.postMessage)({
+          type: import_Messager.Msg.GIT_ACTIONS_GET_REMOTES_WITH_PATH,
+          payload: {
+            remotes,
+            cwd
+          }
         });
       });
     };
     commitAndPush = (message) => {
       const { commitMessage, remoteName } = message.payload;
       const cwd = vscode3.workspace.workspaceFolders?.[0].uri.fsPath;
-      console.log("112121212", 112121212);
       (0, import_child_process2.exec)(
         `git add . && git commit -m "${commitMessage}" && git push ${remoteName} HEAD`,
         { cwd },
         (err, stdout, stderr) => {
-          (0, import_webviewMessager.postMessage)({
-            type: "Msg.COMMIT_AND_PUSH_RESULT",
+          console.log("err", err, stdout, stderr);
+          (0, import_Messager.postMessage)({
+            type: import_Messager.Msg.GIT_ACTIONS_COMMIT_AND_PUSH,
             payload: { success: !err, err: err ? stderr : stdout }
           });
         }
@@ -62543,10 +62521,10 @@ var vscode4 = require("vscode");
 var path11 = require("path");
 var { insertRandomSnippet } = require_insertRandomSnippet();
 var { happyCliInit: happyCliInit2 } = (init_cli(), __toCommonJS(cli_exports));
-var messenger = require_webviewMessager();
-var { postMessage: postMessage3, Msg: Msg3 } = require_webviewMessager();
+var messager = require_Messager();
+var { postMessage: postMessage3, Msg: Msg3 } = require_Messager();
 var {
-  checkNodeVersion: checkNodeVersion3,
+  checkNodeVersion: checkNodeVersion2,
   checkHappyCliInstalled: checkHappyCliInstalled2,
   installHappyCli: installHappyCli2,
   createHappyApp: createHappyApp2
@@ -62812,7 +62790,7 @@ var InlineReportViewProvider = class {
   //获取webviewView
   resolveWebviewView(webviewView) {
     this._webview = webviewView.webview;
-    messenger.setWebview(this._webview);
+    messager.setWebview(this._webview);
     const webview = webviewView.webview;
     const mediaPath = vscode4.Uri.file(
       path11.join(this._context.extensionPath, "media")
@@ -62883,7 +62861,7 @@ var InlineReportViewProvider = class {
         await happyCliInit2(message);
       }
       if (message.command === Msg3.HAPPY_CLI_CHECK_ENVIRONMENT) {
-        const nodeVersionCheckResult = checkNodeVersion3();
+        const nodeVersionCheckResult = checkNodeVersion2();
         const cliInstalled = checkHappyCliInstalled2();
         postMessage3({
           type: Msg3.HAPPY_CLI_CHECK_ENVIRONMENT,
@@ -62899,7 +62877,7 @@ var InlineReportViewProvider = class {
       if (message.command === Msg3.HAPPY_CLI_CREATE__APP) {
         createHappyApp2();
       }
-      if (message.command === Msg3.GIT_ACTIONS_INIT) {
+      if (message.command === Msg3.GIT_ACTIONS_GET_REMOTES_WITH_PATH) {
         gitActionsInit2();
       }
       if (message.command === Msg3.GIT_ACTIONS_COMMIT_AND_PUSH) {
