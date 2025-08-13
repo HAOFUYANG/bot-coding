@@ -9,7 +9,7 @@ lerna-debug.log*
 
 custom-common-utils-***
 node_modules/
-webview-ui/node_modules/
+webview-side-bar/node_modules/
 dist/
 dist-ssr
 *.local

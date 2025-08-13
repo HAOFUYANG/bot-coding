@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"), // 添加 @ 别名路径
     },
+    extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
   },
   server: {
     cors: true,

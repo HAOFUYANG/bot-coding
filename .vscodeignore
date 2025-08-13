@@ -3,7 +3,7 @@
 !**/node_modules/vscode/**
 
 # 忽略源码文件
-webview-ui/**
+webview-side-bar/**
 
 # 忽略配置文件
 webpack.config.js
