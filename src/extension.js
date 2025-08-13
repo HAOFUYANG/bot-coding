@@ -1,16 +1,17 @@
-const vscode = require("vscode");
-const path = require("path");
-const { insertRandomSnippet } = require("./utils/insertRandomSnippet");
-const { happyCliInit } = require("./core/cli");
-const messager = require("./core/Messager");
-const { postMessage, Msg } = require("./core/Messager");
-const {
+// 将CommonJS引入方式改为ES模块引入
+import * as vscode from "vscode";
+import * as path from "path";
+import { insertRandomSnippet } from "./utils/insertRandomSnippet.js";
+import { happyCliInit } from "./core/cli/index.js";
+import * as messager from "./core/Messager/index.js";
+import { postMessage, Msg } from "./core/Messager/index.js";
+import {
   checkNodeVersion,
   checkHappyCliInstalled,
   installHappyCli,
   createHappyApp,
-} = require("./utils/happyCliUtils");
-const { gitActionsInit, commitAndPush } = require("./core/git");
+} from "./utils/happyCliUtils.js";
+import { gitActionsInit, commitAndPush } from "./core/git/index.js";
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;

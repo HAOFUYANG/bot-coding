@@ -24130,7 +24130,7 @@ var require_window = __commonJS({
     var OperatorSubscriber_1 = require_OperatorSubscriber();
     var noop_1 = require_noop();
     var innerFrom_1 = require_innerFrom();
-    function window3(windowBoundaries) {
+    function window4(windowBoundaries) {
       return lift_1.operate(function(source, subscriber) {
         var windowSubject = new Subject_1.Subject();
         subscriber.next(windowSubject.asObservable());
@@ -24154,7 +24154,7 @@ var require_window = __commonJS({
         };
       });
     }
-    exports2.window = window3;
+    exports2.window = window4;
   }
 });
 
@@ -24260,8 +24260,8 @@ var require_windowTime = __commonJS({
         var windowRecords = [];
         var restartOnClose = false;
         var closeWindow = function(record) {
-          var window3 = record.window, subs = record.subs;
-          window3.complete();
+          var window4 = record.window, subs = record.subs;
+          window4.complete();
           subs.unsubscribe();
           arrRemove_1.arrRemove(windowRecords, record);
           restartOnClose && startWindow();
@@ -24294,8 +24294,8 @@ var require_windowTime = __commonJS({
         };
         var terminate = function(cb) {
           loop(function(_a2) {
-            var window3 = _a2.window;
-            return cb(window3);
+            var window4 = _a2.window;
+            return cb(window4);
           });
           cb(subscriber);
           subscriber.unsubscribe();
@@ -24357,12 +24357,12 @@ var require_windowToggle = __commonJS({
           subscriber.error(err);
         };
         innerFrom_1.innerFrom(openings).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(openValue) {
-          var window3 = new Subject_1.Subject();
-          windows.push(window3);
+          var window4 = new Subject_1.Subject();
+          windows.push(window4);
           var closingSubscription = new Subscription_1.Subscription();
           var closeWindow = function() {
-            arrRemove_1.arrRemove(windows, window3);
-            window3.complete();
+            arrRemove_1.arrRemove(windows, window4);
+            window4.complete();
             closingSubscription.unsubscribe();
           };
           var closingNotifier;
@@ -24372,7 +24372,7 @@ var require_windowToggle = __commonJS({
             handleError(err);
             return;
           }
-          subscriber.next(window3.asObservable());
+          subscriber.next(window4.asObservable());
           closingSubscription.add(closingNotifier.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, closeWindow, noop_1.noop, handleError)));
         }, noop_1.noop));
         source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(value) {
@@ -24420,17 +24420,17 @@ var require_windowWhen = __commonJS({
     var innerFrom_1 = require_innerFrom();
     function windowWhen(closingSelector) {
       return lift_1.operate(function(source, subscriber) {
-        var window3;
+        var window4;
         var closingSubscriber;
         var handleError = function(err) {
-          window3.error(err);
+          window4.error(err);
           subscriber.error(err);
         };
         var openWindow = function() {
           closingSubscriber === null || closingSubscriber === void 0 ? void 0 : closingSubscriber.unsubscribe();
-          window3 === null || window3 === void 0 ? void 0 : window3.complete();
-          window3 = new Subject_1.Subject();
-          subscriber.next(window3.asObservable());
+          window4 === null || window4 === void 0 ? void 0 : window4.complete();
+          window4 = new Subject_1.Subject();
+          subscriber.next(window4.asObservable());
           var closingNotifier;
           try {
             closingNotifier = innerFrom_1.innerFrom(closingSelector());
@@ -24442,13 +24442,13 @@ var require_windowWhen = __commonJS({
         };
         openWindow();
         source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function(value) {
-          return window3.next(value);
+          return window4.next(value);
         }, function() {
-          window3.complete();
+          window4.complete();
           subscriber.complete();
         }, handleError, function() {
           closingSubscriber === null || closingSubscriber === void 0 ? void 0 : closingSubscriber.unsubscribe();
-          window3 = null;
+          window4 = null;
         }));
       });
     }
@@ -55316,10 +55316,10 @@ var require_ejs = __commonJS({
         };
         if (opts.filename && typeof Object.defineProperty === "function") {
           var filename = opts.filename;
-          var basename = path12.basename(filename, path12.extname(filename));
+          var basename2 = path12.basename(filename, path12.extname(filename));
           try {
             Object.defineProperty(returnedFn, "name", {
-              value: basename,
+              value: basename2,
               writable: false,
               enumerable: false,
               configurable: true
@@ -62243,6 +62243,8 @@ var init_installTemplate = __esm({
 var require_Messager = __commonJS({
   "src/core/Messager/index.js"(exports2, module2) {
     var Msg4 = {
+      //vscode项目变化
+      VSCODE_PROJECT_CHANGE: "vscode.projectChange",
       //脚手架初始化
       HAPPY_CLI_INIT: "happyCli.init",
       //检查node环境和脚手架是否安装
@@ -62256,7 +62258,7 @@ var require_Messager = __commonJS({
       GIT_ACTIONS_COMMIT_AND_PUSH: "gitActions.commitAndPush"
     };
     var webview = null;
-    function setWebview(view) {
+    function setWebview2(view) {
       webview = view;
     }
     function postMessage4(message) {
@@ -62268,168 +62270,163 @@ var require_Messager = __commonJS({
     }
     module2.exports = {
       Msg: Msg4,
-      setWebview,
+      setWebview: setWebview2,
       postMessage: postMessage4
     };
   }
 });
 
+// src/extension.js
+var vscode4 = __toESM(require("vscode"));
+var path11 = __toESM(require("path"));
+var import_insertRandomSnippet = __toESM(require_insertRandomSnippet());
+
 // src/core/cli/index.js
-var cli_exports = {};
-__export(cli_exports, {
-  happyCliInit: () => happyCliInit
-});
-var vscode, createTemplateByOptions2, downloadTemplate2, installTemplate2, postMessage, Msg, path10, fs2, processStep, happyCliInit;
-var init_cli = __esm({
-  "src/core/cli/index.js"() {
-    vscode = require("vscode");
-    ({ createTemplateByOptions: createTemplateByOptions2 } = (init_createTemplateByOptions(), __toCommonJS(createTemplateByOptions_exports)));
-    ({ downloadTemplate: downloadTemplate2 } = (init_downloadTemplate(), __toCommonJS(downloadTemplate_exports)));
-    ({ installTemplate: installTemplate2 } = (init_installTemplate(), __toCommonJS(installTemplate_exports)));
-    ({ postMessage, Msg } = require_Messager());
-    path10 = require("path");
-    fs2 = require("fs");
-    processStep = {
-      STEP1: {
-        current: 1,
-        stepDetails: [
-          {
-            title: "In Progress",
-            description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
-          },
-          {
-            title: "Waiting",
-            description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
-          },
-          {
-            title: "Waiting",
-            description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
-          },
-          {
-            title: "Waiting",
-            description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
-          }
-        ]
+var vscode = require("vscode");
+var { createTemplateByOptions: createTemplateByOptions2 } = (init_createTemplateByOptions(), __toCommonJS(createTemplateByOptions_exports));
+var { downloadTemplate: downloadTemplate2 } = (init_downloadTemplate(), __toCommonJS(downloadTemplate_exports));
+var { installTemplate: installTemplate2 } = (init_installTemplate(), __toCommonJS(installTemplate_exports));
+var { postMessage, Msg } = require_Messager();
+var path10 = require("path");
+var fs2 = require("fs");
+var processStep = {
+  STEP1: {
+    current: 1,
+    stepDetails: [
+      {
+        title: "In Progress",
+        description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
       },
-      STEP2: {
-        current: 2,
-        stepDetails: [
-          {
-            title: "Finished",
-            description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
-          },
-          {
-            title: "In Progress",
-            description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
-          },
-          {
-            title: "Waiting",
-            description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
-          },
-          {
-            title: "Waiting",
-            description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
-          }
-        ]
+      {
+        title: "Waiting",
+        description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
       },
-      STEP3: {
-        current: 3,
-        stepDetails: [
-          {
-            title: "Finished",
-            description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
-          },
-          {
-            title: "Finished",
-            description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
-          },
-          {
-            title: "In Progress",
-            description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
-          },
-          {
-            title: "Waiting",
-            description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
-          }
-        ]
+      {
+        title: "Waiting",
+        description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
       },
-      STEP4: {
-        current: 4,
-        stepDetails: [
-          {
-            title: "Finished",
-            description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
-          },
-          {
-            title: "Finished",
-            description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
-          },
-          {
-            title: "Finished",
-            description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
-          },
-          {
-            title: "Finished",
-            description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
-          }
-        ]
+      {
+        title: "Waiting",
+        description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
       }
-    };
-    happyCliInit = async (message) => {
-      const { name, type, template } = message.params;
-      try {
-        const folder = await vscode.window.showOpenDialog({
-          canSelectFolders: true,
-          canSelectMany: false,
-          openLabel: "\u8BF7\u9009\u62E9\u9879\u76EE\u6A21\u7248\u6587\u4EF6\u751F\u6210\u4F4D\u7F6E"
-        });
-        if (!folder) return;
-        const baseDir = folder[0].fsPath;
-        const selectedTemplate = await createTemplateByOptions2({
-          name,
-          type,
-          template
-        });
-        postMessage({
-          type: Msg.HAPPY_CLI_INIT,
-          payload: processStep.STEP1
-        });
-        await installTemplate2(selectedTemplate, baseDir);
-        postMessage({
-          type: Msg.HAPPY_CLI_INIT,
-          payload: processStep.STEP2
-        });
-        await downloadTemplate2(selectedTemplate);
-        postMessage({
-          type: Msg.HAPPY_CLI_INIT,
-          payload: processStep.STEP3
-        });
-        await installTemplate2(selectedTemplate, baseDir);
-        postMessage({
-          type: Msg.HAPPY_CLI_INIT,
-          payload: processStep.STEP4
-        });
-        const projectPath = path10.join(baseDir, name);
-        vscode.commands.executeCommand(
-          "vscode.openFolder",
-          vscode.Uri.file(projectPath),
-          true
-        );
-      } catch (error) {
-        vscode.window.showErrorMessage(`\u521B\u5EFA\u5931\u8D25\uFF1A${e.message}`);
+    ]
+  },
+  STEP2: {
+    current: 2,
+    stepDetails: [
+      {
+        title: "Finished",
+        description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
+      },
+      {
+        title: "In Progress",
+        description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
+      },
+      {
+        title: "Waiting",
+        description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
+      },
+      {
+        title: "Waiting",
+        description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
       }
-    };
+    ]
+  },
+  STEP3: {
+    current: 3,
+    stepDetails: [
+      {
+        title: "Finished",
+        description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
+      },
+      {
+        title: "Finished",
+        description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
+      },
+      {
+        title: "In Progress",
+        description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
+      },
+      {
+        title: "Waiting",
+        description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
+      }
+    ]
+  },
+  STEP4: {
+    current: 4,
+    stepDetails: [
+      {
+        title: "Finished",
+        description: "\u51C6\u5907\u521B\u5EFA\u9879\u76EE\u6A21\u7248..."
+      },
+      {
+        title: "Finished",
+        description: "\u9879\u76EE\u6A21\u7248\u4E0B\u8F7D\u6210\u529F"
+      },
+      {
+        title: "Finished",
+        description: "\u62F7\u8D1D\u6A21\u7248\u5E76\u5F00\u59CB\u6E32\u67D3..."
+      },
+      {
+        title: "Finished",
+        description: "\u6A21\u7248\u9879\u76EE\u521B\u5EFA\u6210\u529F"
+      }
+    ]
   }
-});
+};
+var happyCliInit = async (message) => {
+  const { name, type, template } = message.params;
+  try {
+    const folder = await vscode.window.showOpenDialog({
+      canSelectFolders: true,
+      canSelectMany: false,
+      openLabel: "\u8BF7\u9009\u62E9\u9879\u76EE\u6A21\u7248\u6587\u4EF6\u751F\u6210\u4F4D\u7F6E"
+    });
+    if (!folder) return;
+    const baseDir = folder[0].fsPath;
+    const selectedTemplate = await createTemplateByOptions2({
+      name,
+      type,
+      template
+    });
+    postMessage({
+      type: Msg.HAPPY_CLI_INIT,
+      payload: processStep.STEP1
+    });
+    await installTemplate2(selectedTemplate, baseDir);
+    postMessage({
+      type: Msg.HAPPY_CLI_INIT,
+      payload: processStep.STEP2
+    });
+    await downloadTemplate2(selectedTemplate);
+    postMessage({
+      type: Msg.HAPPY_CLI_INIT,
+      payload: processStep.STEP3
+    });
+    await installTemplate2(selectedTemplate, baseDir);
+    postMessage({
+      type: Msg.HAPPY_CLI_INIT,
+      payload: processStep.STEP4
+    });
+    const projectPath = path10.join(baseDir, name);
+    vscode.commands.executeCommand(
+      "vscode.openFolder",
+      vscode.Uri.file(projectPath),
+      true
+    );
+  } catch (error) {
+    vscode.window.showErrorMessage(`\u521B\u5EFA\u5931\u8D25\uFF1A${e.message}`);
+  }
+};
+
+// src/extension.js
+var messager = __toESM(require_Messager());
+var import_Messager2 = __toESM(require_Messager());
 
 // src/utils/happyCliUtils.js
-var happyCliUtils_exports = {};
-__export(happyCliUtils_exports, {
-  checkHappyCliInstalled: () => checkHappyCliInstalled,
-  checkNodeVersion: () => checkNodeVersion,
-  createHappyApp: () => createHappyApp,
-  installHappyCli: () => installHappyCli
-});
+var vscode2 = __toESM(require("vscode"));
+var import_child_process = require("child_process");
 function checkNodeVersion() {
   const version = (0, import_child_process.execSync)("node -v", { encoding: "utf-8" }).trim();
   return {
@@ -62458,78 +62455,48 @@ function createHappyApp() {
     true
   );
 }
-var vscode2, import_child_process;
-var init_happyCliUtils = __esm({
-  "src/utils/happyCliUtils.js"() {
-    vscode2 = __toESM(require("vscode"));
-    import_child_process = require("child_process");
-  }
-});
 
 // src/core/git/index.js
-var git_exports = {};
-__export(git_exports, {
-  commitAndPush: () => commitAndPush,
-  gitActionsInit: () => gitActionsInit
-});
-var import_child_process2, vscode3, import_Messager, gitActionsInit, commitAndPush;
-var init_git = __esm({
-  "src/core/git/index.js"() {
-    import_child_process2 = require("child_process");
-    vscode3 = __toESM(require("vscode"));
-    import_Messager = __toESM(require_Messager());
-    gitActionsInit = () => {
-      const folder = vscode3.workspace.workspaceFolders?.[0];
-      if (!folder) {
-        return;
-      }
-      const cwd = folder.uri.fsPath;
-      (0, import_child_process2.exec)("git remote -v", { cwd }, (err, stdout) => {
-        if (err) {
-          console.error("\u9519\u8BEF");
-        }
-        const remotes = stdout.split("\n").map((line) => line.split("	")[0]).filter(Boolean);
-        (0, import_Messager.postMessage)({
-          type: import_Messager.Msg.GIT_ACTIONS_GET_REMOTES_WITH_PATH,
-          payload: {
-            remotes,
-            cwd
-          }
-        });
-      });
-    };
-    commitAndPush = (message) => {
-      const { commitMessage, remoteName } = message.payload;
-      const cwd = vscode3.workspace.workspaceFolders?.[0].uri.fsPath;
-      (0, import_child_process2.exec)(
-        `git add . && git commit -m "${commitMessage}" && git push ${remoteName} HEAD`,
-        { cwd },
-        (err, stdout, stderr) => {
-          console.log("err", err, stdout, stderr);
-          (0, import_Messager.postMessage)({
-            type: import_Messager.Msg.GIT_ACTIONS_COMMIT_AND_PUSH,
-            payload: { success: !err, err: err ? stderr : stdout }
-          });
-        }
-      );
-    };
+var import_child_process2 = require("child_process");
+var vscode3 = __toESM(require("vscode"));
+var import_Messager = __toESM(require_Messager());
+var gitActionsInit = () => {
+  const folder = vscode3.workspace.workspaceFolders?.[0];
+  if (!folder) {
+    return;
   }
-});
+  const cwd = folder.uri.fsPath;
+  (0, import_child_process2.exec)("git remote -v", { cwd }, (err, stdout) => {
+    if (err) {
+      console.error("\u9519\u8BEF");
+    }
+    const remotes = stdout.split("\n").map((line) => line.split("	")[0]).filter(Boolean);
+    (0, import_Messager.postMessage)({
+      type: import_Messager.Msg.GIT_ACTIONS_GET_REMOTES_WITH_PATH,
+      payload: {
+        remotes,
+        cwd
+      }
+    });
+  });
+};
+var commitAndPush = (message) => {
+  const { commitMessage, remoteName } = message.payload;
+  const cwd = vscode3.workspace.workspaceFolders?.[0].uri.fsPath;
+  (0, import_child_process2.exec)(
+    `git add . && git commit -m "${commitMessage}" && git push ${remoteName} HEAD`,
+    { cwd },
+    (err, stdout, stderr) => {
+      console.log("err", err, stdout, stderr);
+      (0, import_Messager.postMessage)({
+        type: import_Messager.Msg.GIT_ACTIONS_COMMIT_AND_PUSH,
+        payload: { success: !err, err: err ? stderr : stdout }
+      });
+    }
+  );
+};
 
 // src/extension.js
-var vscode4 = require("vscode");
-var path11 = require("path");
-var { insertRandomSnippet } = require_insertRandomSnippet();
-var { happyCliInit: happyCliInit2 } = (init_cli(), __toCommonJS(cli_exports));
-var messager = require_Messager();
-var { postMessage: postMessage3, Msg: Msg3 } = require_Messager();
-var {
-  checkNodeVersion: checkNodeVersion2,
-  checkHappyCliInstalled: checkHappyCliInstalled2,
-  installHappyCli: installHappyCli2,
-  createHappyApp: createHappyApp2
-} = (init_happyCliUtils(), __toCommonJS(happyCliUtils_exports));
-var { gitActionsInit: gitActionsInit2, commitAndPush: commitAndPush2 } = (init_git(), __toCommonJS(git_exports));
 var isGenerating = false;
 var targetEditor = null;
 var outputChannel = null;
@@ -62582,7 +62549,7 @@ async function triggerAndAcceptInline() {
       });
       didAccept = true;
     } else {
-      await insertRandomSnippet(targetEditor);
+      await (0, import_insertRandomSnippet.insertRandomSnippet)(targetEditor);
       outputChannel.appendLine("insert random code block instead of accepting");
     }
     const newLineCount = targetEditor.document.lineCount;
@@ -62773,6 +62740,17 @@ function activate(context) {
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
+  vscode4.workspace.onDidChangeWorkspaceFolders(async () => {
+    const folder = vscode4.workspace.workspaceFolders?.[0];
+    if (folder) {
+      (0, import_Messager2.postMessage)({
+        type: import_Messager2.Msg.VSCODE_PROJECT_CHANGE,
+        payload: {
+          cwd: folder.uri.fsPath
+        }
+      });
+    }
+  });
 }
 var InlineReportViewProvider = class {
   constructor(context) {
@@ -62857,31 +62835,31 @@ var InlineReportViewProvider = class {
       if (message.command === "deleteBotFile") {
         vscode4.commands.executeCommand("deleteBotFile", message.path);
       }
-      if (message.command === Msg3.HAPPY_CLI_INIT) {
-        await happyCliInit2(message);
+      if (message.command === import_Messager2.Msg.HAPPY_CLI_INIT) {
+        await happyCliInit(message);
       }
-      if (message.command === Msg3.HAPPY_CLI_CHECK_ENVIRONMENT) {
-        const nodeVersionCheckResult = checkNodeVersion2();
-        const cliInstalled = checkHappyCliInstalled2();
-        postMessage3({
-          type: Msg3.HAPPY_CLI_CHECK_ENVIRONMENT,
+      if (message.command === import_Messager2.Msg.HAPPY_CLI_CHECK_ENVIRONMENT) {
+        const nodeVersionCheckResult = checkNodeVersion();
+        const cliInstalled = checkHappyCliInstalled();
+        (0, import_Messager2.postMessage)({
+          type: import_Messager2.Msg.HAPPY_CLI_CHECK_ENVIRONMENT,
           payload: {
             nodeVersionCheckResult,
             cliInstalled
           }
         });
       }
-      if (message.command === Msg3.HAPPY_CLI_INSTALL_CLI) {
-        installHappyCli2();
+      if (message.command === import_Messager2.Msg.HAPPY_CLI_INSTALL_CLI) {
+        installHappyCli();
       }
-      if (message.command === Msg3.HAPPY_CLI_CREATE__APP) {
-        createHappyApp2();
+      if (message.command === import_Messager2.Msg.HAPPY_CLI_CREATE__APP) {
+        createHappyApp();
       }
-      if (message.command === Msg3.GIT_ACTIONS_GET_REMOTES_WITH_PATH) {
-        gitActionsInit2();
+      if (message.command === import_Messager2.Msg.GIT_ACTIONS_GET_REMOTES_WITH_PATH) {
+        gitActionsInit();
       }
-      if (message.command === Msg3.GIT_ACTIONS_COMMIT_AND_PUSH) {
-        commitAndPush2(message);
+      if (message.command === import_Messager2.Msg.GIT_ACTIONS_COMMIT_AND_PUSH) {
+        commitAndPush(message);
       }
     });
   }

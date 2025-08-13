@@ -14,7 +14,7 @@ const GitTab = () => {
 
   const remotesRef = useRef([]);
   const projectRef = useRef(null);
-  const requestGitRemote = () => {
+  const requestGitRemote = async () => {
     vscodeApi.postMessage({ command: "gitActions.getRemotesWithPath" });
   };
 
@@ -26,18 +26,14 @@ const GitTab = () => {
     //   command: "gitActions.init",
     // });
     const handle = (event) => {
-      console.log("event---");
       const { type, payload } = event.data;
-      console.log("type,payload", type);
       //初始化git远程仓库
       if (type === "gitActions.getRemotesWithPath") {
-        console.log("payload", payload);
         const { remotes: newRemotes, cwd } = payload;
         const uniqueRemotes = [...new Set(newRemotes)];
         remotesRef.current = uniqueRemotes;
         projectRef.current = cwd;
         setProjectPath(cwd);
-        console.log("uniqueRemotes", uniqueRemotes);
         setRemotes(uniqueRemotes);
         setSelectedRemote(uniqueRemotes[0]);
       }
@@ -46,7 +42,6 @@ const GitTab = () => {
         const { err, success } = payload;
         console.log("err", err);
         console.log("success", success);
-
         if (success) {
           setProgress(100);
           setPushResult(payload.success);
