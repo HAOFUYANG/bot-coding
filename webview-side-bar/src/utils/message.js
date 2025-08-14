@@ -1,5 +1,6 @@
+import { getVscodeApi } from "./vscodeApi";
 const vscodeApi = window.acquireVsCodeApi
-  ? window.acquireVsCodeApi()
+  ? getVscodeApi()
   : {
       postMessage: (...args) => console.log("[发送postmessage]", ...args),
       getState: () => null,

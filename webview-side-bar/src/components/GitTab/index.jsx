@@ -1,8 +1,9 @@
 import { vscodeApi } from "@/utils/message";
 import React, { useEffect, useState, useRef } from "react";
 import { Input, Button, Select, message, Typography, Progress } from "antd";
+import { useGit } from "@/hooks/useGit";
 const { TextArea } = Input;
-const { Title } = Typography;
+
 const GitTab = () => {
   const [remotes, setRemotes] = useState([]);
   const [selectedRemote, setSelectedRemote] = useState(null);
@@ -10,51 +11,32 @@ const GitTab = () => {
   const [pushResult, setPushResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [projectPath, setProjectPath] = useState(null);
+  const [_projectPath, setProjectPath] = useState(null);
 
   const remotesRef = useRef([]);
   const projectRef = useRef(null);
+
+  const { getRemotesWithPath, commitAndPush } = useGit();
   const requestGitRemote = async () => {
-    vscodeApi.postMessage({ command: "gitActions.getRemotesWithPath" });
+    const { remotes: newRemotes, cwd } = await getRemotesWithPath();
+    const uniqueRemotes = [...new Set(newRemotes)];
+    remotesRef.current = uniqueRemotes;
+    projectRef.current = cwd;
+    setProjectPath(cwd);
+    setRemotes(uniqueRemotes);
+    setSelectedRemote(uniqueRemotes[0]);
   };
 
   useEffect(() => {
     //初始化做一次获取
     requestGitRemote();
-
-    // vscodeApi.postMessage({
-    //   command: "gitActions.init",
     // });
     const handle = (event) => {
       const { type, payload } = event.data;
-      //初始化git远程仓库
-      if (type === "gitActions.getRemotesWithPath") {
-        const { remotes: newRemotes, cwd } = payload;
-        const uniqueRemotes = [...new Set(newRemotes)];
-        remotesRef.current = uniqueRemotes;
-        projectRef.current = cwd;
-        setProjectPath(cwd);
-        setRemotes(uniqueRemotes);
-        setSelectedRemote(uniqueRemotes[0]);
-      }
-      //接收git回调
-      if (type === "gitActions.commitAndPush") {
-        const { err, success } = payload;
-        console.log("err", err);
-        console.log("success", success);
-        if (success) {
-          setProgress(100);
-          setPushResult(payload.success);
-          message.success("Push success!");
-        } else {
-          setProgress(0);
-          setPushResult(payload.err);
-          message.error("Push failed, check logs");
-        }
-        setLoading(false);
-      }
       if (type === "vscode.projectChange") {
         // 当检测到项目路径变化时强制刷新
+        const { cwd } = payload;
+
         if (cwd !== projectRef.current) {
           requestGitRemote();
         }
@@ -63,33 +45,44 @@ const GitTab = () => {
     window.addEventListener("message", handle);
     return () => window.removeEventListener("message", handle);
   }, []);
+  const handleRefresh = () => {
+    requestGitRemote();
+  };
   //推送
-  const onPush = () => {
-    if (!commitMessage) {
-      return message.warning("Please input commit message");
-    }
+  const onPush = async () => {
     setLoading(true);
     setProgress(30);
-    vscodeApi.postMessage({
-      command: "gitActions.commitAndPush",
-      payload: {
-        commitMessage,
-        remoteName: selectedRemote,
-      },
-    });
+    const data = { commitMessage, remoteName: selectedRemote };
+    const { err, success } = await getRemotesWithPath(data);
+    if (success) {
+      setProgress(100);
+      setPushResult(payload.success);
+      message.success("Push success!");
+    } else {
+      setProgress(0);
+      setPushResult(payload.err);
+      message.error("Push failed, check logs");
+    }
+    setLoading(false);
   };
   return (
     <div style={{ padding: 0 }}>
+      <div style={{ marginBottom: 12, textAlign: "right" }}>
+        <Button type="primary" onClick={handleRefresh}>
+          刷新
+        </Button>
+      </div>
+
       <Select
         style={{ width: "100%", marginBottom: 12 }}
         value={selectedRemote}
         onChange={(val) => setSelectedRemote(val)}
         options={remotes.map((r) => ({ label: r, value: r }))}
-        placeholder="Select remote"
+        placeholder="提交仓库选择"
       />
       <TextArea
         rows={4}
-        placeholder="Enter commit message"
+        placeholder="提交内容"
         value={commitMessage}
         onChange={(e) => setCommitMessage(e.target.value)}
         style={{ marginBottom: 12 }}

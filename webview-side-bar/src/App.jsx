@@ -90,7 +90,7 @@ const App = () => {
   const [startLoading, setStartLoading] = useState(false);
   const token = useMemo(() => getTokenWithVscodeTheme(), []);
   //添加展示隐藏tab的逻辑
-  const [clickCount, setClickCount] = useState(0);
+  const [_clickCount, setClickCount] = useState(0);
   //初始状态读取当前持久化数据
   const [barrageUnlocked, setBarrageUnlocked] = useState(() => {
     const saved = vscodeApi.getState?.();

@@ -31,8 +31,4 @@ function postMessage(message) {
   }
 }
 
-module.exports = {
-  Msg,
-  setWebview,
-  postMessage,
-};
+export { Msg, setWebview, postMessage };

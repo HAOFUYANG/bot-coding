@@ -1,10 +1,9 @@
-const vscode = require("vscode");
-const { createTemplateByOptions } = require("./createTemplateByOptions");
-const { downloadTemplate } = require("./downloadTemplate");
-const { installTemplate } = require("./installTemplate");
-const { postMessage, Msg } = require("../Messager/index");
-const path = require("path");
-const fs = require("fs");
+import * as vscode from "vscode";
+import { createTemplateByOptions } from "./createTemplateByOptions";
+import { downloadTemplate } from "./downloadTemplate";
+import { installTemplate } from "./installTemplate";
+import { postMessage, Msg } from "../Messager/index";
+import path from "path";
 const processStep = {
   STEP1: {
     current: 1,

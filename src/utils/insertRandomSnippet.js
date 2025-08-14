@@ -1,4 +1,4 @@
-const vscode = require("vscode");
+import * as vscode from "vscode";
 
 const snippets = [
   "// TODO: optimize this function",
@@ -74,6 +74,4 @@ async function insertRandomSnippet(editor) {
   });
 }
 
-module.exports = {
-  insertRandomSnippet,
-};
+export { insertRandomSnippet };

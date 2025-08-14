@@ -1,4 +1,4 @@
-const vscode = require("vscode");
+import * as vscode from "vscode";
 
 let outputChannel = null;
 
@@ -14,7 +14,4 @@ function log(message) {
   }
 }
 
-module.exports = {
-  initLogger,
-  log,
-};
+export { initLogger, log };

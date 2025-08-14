@@ -57,6 +57,8 @@
     ]
   },
   "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
     "dev:webview": "cd webview-side-bar && npm run dev",
     "build:webview": "cd webview-side-bar && npm install && npm run build",
     "build:extension": "esbuild src/extension.js --bundle --platform=node --external:vscode --outfile=dist/extension.js",
@@ -65,7 +67,10 @@
     "package": "npm run build && vsce package"
   },
   "devDependencies": {
-    "@vscode/vsce": "^3.6.0"
+    "@types/node": "^24.2.1",
+    "@types/vscode": "^1.102.0",
+    "@vscode/vsce": "^3.6.0",
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "@happy.cli/utils": "^1.0.8",
@@ -74,6 +79,7 @@
     "esbuild": "^0.25.8",
     "execa": "^9.5.2",
     "fs-extra": "^11.3.0",
-    "path-exists": "^5.0.0"
+    "path-exists": "^5.0.0",
+    "reflect-metadata": "^0.2.2"
   }
 }

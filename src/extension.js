@@ -1,3 +1,4 @@
+import "reflect-metadata";
 // 将CommonJS引入方式改为ES模块引入
 import * as vscode from "vscode";
 import * as path from "path";
@@ -11,7 +12,11 @@ import {
   installHappyCli,
   createHappyApp,
 } from "./utils/happyCliUtils.js";
-import { gitActionsInit, commitAndPush } from "./core/git/index.js";
+//注册cecClient
+import "./controller";
+import { getControllers } from "cec-client-server/decorator";
+import { CecServer } from "cec-client-server";
+
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -22,9 +27,6 @@ let acceptRatio = 25;
 let acceptedContentDetails = []; //记录采纳的详细信息
 let acceptedCount = 0; // 记录采纳的次数
 let reportViewProvider = null;
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 /**
  * @description 触发内联建议并采纳。
@@ -117,7 +119,6 @@ async function triggerAndAcceptInline() {
       outputChannel.appendLine("insert words for empty line to ");
       await insertTriggerWord(targetEditor);
     }
-    // await delay(1000);
   } catch (e) {
     outputChannel.appendLine(`[triggerAndAcceptInline] error: ${e.message}`);
   }
@@ -210,6 +211,7 @@ function activate(context) {
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
   outputChannel.show(true);
+
   reportViewProvider = new InlineReportViewProvider(context);
   //注册panel的html页面
   context.subscriptions.push(
@@ -350,6 +352,7 @@ class InlineReportViewProvider {
     this._context = context;
     this._webviewView = null;
   }
+
   //停止事件
   postGenerationStopped() {
     if (this._webview) {
@@ -361,17 +364,17 @@ class InlineReportViewProvider {
   //获取webviewView
   resolveWebviewView(webviewView) {
     this._webview = webviewView.webview;
-    //消息中心注入webview
-    messager.setWebview(this._webview); // 注入 webview
-    const webview = webviewView.webview;
     const mediaPath = vscode.Uri.file(
       path.join(this._context.extensionPath, "media")
     );
-
+    //消息中心注入webview
+    messager.setWebview(this._webview); // 注入 webview
+    const webview = webviewView.webview;
     webview.options = {
       enableScripts: true,
       localResourceRoots: [mediaPath],
     };
+
     const isDevMode = process.env.NODE_ENV === "development"; // 你可以用 cross-env 设置
     if (false) {
       // 本地开发模式直接指向 vite
@@ -402,7 +405,6 @@ class InlineReportViewProvider {
 
       vscode.workspace.fs.readFile(htmlUri).then((buffer) => {
         let html = buffer.toString("utf8");
-
         // 替换静态资源路径为 webview 可访问的 Uri
         html = html.replace(/(src|href)="(.+?)"/g, (_, attr, relativePath) => {
           const resourcePath = vscode.Uri.file(
@@ -412,6 +414,19 @@ class InlineReportViewProvider {
         });
 
         webview.html = html;
+
+        //注册通讯
+        const { callables, subscribables } = getControllers();
+        const cecServer = new CecServer(
+          webview.postMessage.bind(webview),
+          webview.onDidReceiveMessage.bind(webview)
+        );
+        Object.entries(callables).forEach(([name, handler]) =>
+          cecServer.onCall(name, handler)
+        );
+        Object.entries(subscribables).forEach(([name, handler]) =>
+          cecServer.onSubscribe(name, handler)
+        );
       });
     }
 
@@ -464,13 +479,6 @@ class InlineReportViewProvider {
       //使用 create-happy-app 创建应用
       if (message.command === Msg.HAPPY_CLI_CREATE__APP) {
         createHappyApp();
-      }
-      //-------git 工具---------
-      if (message.command === Msg.GIT_ACTIONS_GET_REMOTES_WITH_PATH) {
-        gitActionsInit();
-      }
-      if (message.command === Msg.GIT_ACTIONS_COMMIT_AND_PUSH) {
-        commitAndPush(message);
       }
     });
   }
