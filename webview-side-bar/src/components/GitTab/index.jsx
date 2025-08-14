@@ -53,15 +53,15 @@ const GitTab = () => {
     setLoading(true);
     setProgress(30);
     const data = { commitMessage, remoteName: selectedRemote };
-    const { err, success } = await getRemotesWithPath(data);
+    const { err, success } = await commitAndPush(data);
     if (success) {
       setProgress(100);
-      setPushResult(payload.success);
-      message.success("Push success!");
+      setPushResult(success);
+      message.success("代码推送成功!");
     } else {
       setProgress(0);
-      setPushResult(payload.err);
-      message.error("Push failed, check logs");
+      setPushResult(err);
+      message.error("代码推送失败!");
     }
     setLoading(false);
   };
