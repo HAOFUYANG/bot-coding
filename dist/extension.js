@@ -20352,9 +20352,9 @@ var require_fromSubscribable = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.fromSubscribable = void 0;
     var Observable_1 = require_Observable();
-    function fromSubscribable(subscribable) {
+    function fromSubscribable(subscribable2) {
       return new Observable_1.Observable(function(subscriber) {
-        return subscribable.subscribe(subscriber);
+        return subscribable2.subscribe(subscriber);
       });
     }
     exports2.fromSubscribable = fromSubscribable;
@@ -62379,6 +62379,13 @@ function setCallableName(controller2, callableName) {
   const currentValue = controllerRecordMap.get(controller2);
   currentValue.callableNames.push(callableName);
 }
+function setSubscribableName(controller2, subscribableName) {
+  if (!controllerRecordMap.has(controller2)) {
+    controllerRecordMap.set(controller2, getDefaultInfo());
+  }
+  const currentValue = controllerRecordMap.get(controller2);
+  currentValue.subscribableNames.push(subscribableName);
+}
 var controllerConfig;
 function registerControllers(controllerRegistry) {
   controllerRegistry.forEach(instance.resolve.bind(instance));
@@ -62427,12 +62434,30 @@ function callable(aliasName) {
     });
   };
 }
+function subscribable(aliasName) {
+  return function(target, propertyKey, descriptor) {
+    if (typeof descriptor.value != "function") {
+      throw Error("The subscribable decorator should be work at Function");
+    }
+    if (typeof propertyKey === "symbol") {
+      throw Error("The method key should not Symbol, string or number is expected");
+    }
+    setSubscribableName(target.constructor, {
+      aliasName,
+      name: propertyKey
+    });
+  };
+}
 
 // src/controller/git.controller.ts
 var import_child_process2 = require("child_process");
 var vscode4 = __toESM(require("vscode"));
 var GitController = class {
   constructor() {
+    vscode4.workspace.onDidChangeWorkspaceFolders(() => {
+      const cwd = vscode4.workspace.workspaceFolders?.[0]?.uri.fsPath || "";
+      this.projectChange({ cwd });
+    });
   }
   async getRemotesWithPath() {
     const folder = vscode4.workspace.workspaceFolders?.[0];
@@ -62446,24 +62471,30 @@ var GitController = class {
           console.error("\u83B7\u53D6\u8FDC\u7A0B\u4ED3\u5E93\u5931\u8D25:", err);
           return reject(err);
         }
-        console.log("stdout :>> ", stdout);
         const remotes = stdout.split("\n").map((line) => line.split("	")[0]).filter(Boolean);
         resolve({ remotes, cwd });
       });
     });
   }
   async commitAndPush(data) {
-    const { commitMessage, remoteName } = data;
+    console.log("data :>> ", data);
+    const { selectedSst, commitMessage, remoteName } = data;
     const cwd = vscode4.workspace.workspaceFolders?.[0].uri.fsPath;
     return new Promise((resolve, reject) => {
       (0, import_child_process2.exec)(
-        `git add . && git commit -m "${commitMessage}" && git push ${remoteName} HEAD`,
+        `git add . && git commit -m "${selectedSst} msg:${commitMessage}" && git push ${remoteName} HEAD`,
         { cwd },
         (err, stdout, stderr) => {
-          return resolve({ success: !err, err: err ? stderr : stdout });
+          console.log("err :>> ", err);
+          console.log("stdout :>> ", stdout);
+          console.log("stderr :>> ", stderr);
+          resolve({ success: !err, err: err ? stdout : stderr });
         }
       );
     });
+  }
+  projectChange(_payload) {
+    console.log("\u53D1\u73B0\u9879\u76EE\u66F4\u65B0\u4E86");
   }
 };
 __decorateClass([
@@ -62472,6 +62503,9 @@ __decorateClass([
 __decorateClass([
   callable("commitAndPush")
 ], GitController.prototype, "commitAndPush", 1);
+__decorateClass([
+  subscribable("projectChange")
+], GitController.prototype, "projectChange", 1);
 GitController = __decorateClass([
   controller("Git")
 ], GitController);
