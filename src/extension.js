@@ -334,18 +334,6 @@ function activate(context) {
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
-  //监听vscode的项目变化
-  vscode.workspace.onDidChangeWorkspaceFolders(async () => {
-    const folder = vscode.workspace.workspaceFolders?.[0];
-    if (folder) {
-      postMessage({
-        type: Msg.VSCODE_PROJECT_CHANGE,
-        payload: {
-          cwd: folder.uri.fsPath,
-        },
-      });
-    }
-  });
 }
 class InlineReportViewProvider {
   constructor(context) {

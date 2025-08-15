@@ -4,8 +4,6 @@
 
 //消息全部类型整合
 let Msg = {
-  //vscode项目变化
-  VSCODE_PROJECT_CHANGE: "vscode.projectChange",
   //脚手架初始化
   HAPPY_CLI_INIT: "happyCli.init",
   //检查node环境和脚手架是否安装

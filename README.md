@@ -5,6 +5,11 @@
 - 启动: `> Start Coding`
 - 停止: `> Stop Coding`
 
+## 项目的通讯能力
+
+- 使用了 cec-client-server
+- 参考了https://juejin.cn/post/7325132202970136585#heading-11
+
 ## 功能
 
 - ✅ 自动生成代码
