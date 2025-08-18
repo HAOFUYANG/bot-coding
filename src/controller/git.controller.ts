@@ -61,7 +61,6 @@ export class GitController {
    */
   @callable("commitAndPush")
   async commitAndPush(data: any): Promise<any> {
-    console.log("data :>> ", data);
     const { selectedSst, commitMessage, remoteName } = data;
     const cwd = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
     // 执行git add、commit和push命令序列
@@ -70,9 +69,6 @@ export class GitController {
         `git add . && git commit -m "${selectedSst} msg:${commitMessage}" && git push ${remoteName} HEAD`,
         { cwd },
         (err, stdout, stderr) => {
-          console.log("err :>> ", err);
-          console.log("stdout :>> ", stdout);
-          console.log("stderr :>> ", stderr);
           resolve({ success: !err, err: err ? stdout : stderr });
         }
       );

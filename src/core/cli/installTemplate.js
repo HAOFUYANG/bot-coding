@@ -41,10 +41,8 @@ async function ejsRender(targetPath, installDir, template, selectedTemplate) {
     nodir: true,
     ignore: [...ignore, "**/node_modules/**"],
   });
-  console.log("jsFiles :>> ", jsFiles);
   jsFiles.forEach((file) => {
     const filePath = path.resolve(installDir, file);
-    console.log("filePath :>> ", filePath);
     ejs.renderFile(
       filePath,
       {
@@ -66,12 +64,10 @@ async function ejsRender(targetPath, installDir, template, selectedTemplate) {
   });
 }
 export async function installTemplate(selectedTemplate, baseDir) {
-  console.log("selectedTemplate :>> ", selectedTemplate);
   const force = true;
   const { targetPath, name, template } = selectedTemplate;
   fse.ensureDirSync(targetPath);
   const installDir = path.resolve(`${baseDir}/${name}`);
-  console.log("installDir :>> ", installDir);
   if (pathExistsSync(installDir)) {
     if (!force) {
       console.error(`当前目录下已经存在${installDir}文件夹`);

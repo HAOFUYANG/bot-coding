@@ -61429,8 +61429,6 @@ async function installTemplate(selectedTemplate, baseDir) {
 
 // src/core/Messager/index.js
 var Msg = {
-  //vscode项目变化
-  VSCODE_PROJECT_CHANGE: "vscode.projectChange",
   //脚手架初始化
   HAPPY_CLI_INIT: "happyCli.init",
   //检查node环境和脚手架是否安装
@@ -62510,8 +62508,133 @@ GitController = __decorateClass([
   controller("Git")
 ], GitController);
 
+// src/service/axios.service.ts
+var AxiosService = class {
+  axiosInstance;
+  constructor(defaults3 = {}) {
+    this.axiosInstance = axios_default.create(defaults3);
+    this.axiosInstance.interceptors.request.use(
+      (config) => config,
+      (error) => Promise.reject(error)
+    );
+    this.axiosInstance.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      (error) => {
+        if (error.response) {
+          const status = error.response.status;
+          console.log("error.response :>> ", error.response);
+          if (status === 401) {
+            console.log("\u9700\u8981\u505A\u91CD\u65B0\u767B\u9646\u4E86");
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+  get(url2, config) {
+    return this.axiosInstance.get(url2, config);
+  }
+  post(url2, data, config) {
+    return this.axiosInstance.post(url2, data, config);
+  }
+  put(url2, data, config) {
+    return this.axiosInstance.put(url2, data, config);
+  }
+  delete(url2, config) {
+    return this.axiosInstance.delete(url2, config);
+  }
+  patch(url2, data, config) {
+    return this.axiosInstance.patch(url2, data, config);
+  }
+};
+
+// src/controller/axios.controller.ts
+var AxiosController = class {
+  constructor() {
+  }
+  axiosService = new AxiosService();
+  get(url2, config) {
+    return this.axiosService.get(url2, config);
+  }
+  post(url2, data, config) {
+    return this.axiosService.post(url2, data, config);
+  }
+  put(url2, data, config) {
+    return this.axiosService.put(url2, data, config);
+  }
+  delete(url2, config) {
+    return this.axiosService.delete(url2, config);
+  }
+  patch(url2, data, config) {
+    return this.axiosService.patch(url2, data, config);
+  }
+};
+__decorateClass([
+  callable("get")
+], AxiosController.prototype, "get", 1);
+__decorateClass([
+  callable("post")
+], AxiosController.prototype, "post", 1);
+__decorateClass([
+  callable("put")
+], AxiosController.prototype, "put", 1);
+__decorateClass([
+  callable("delete")
+], AxiosController.prototype, "delete", 1);
+__decorateClass([
+  callable("patch")
+], AxiosController.prototype, "patch", 1);
+AxiosController = __decorateClass([
+  controller("Axios")
+], AxiosController);
+
+// src/service/context.service.ts
+var ContextService = class _ContextService {
+  static _context;
+  static register(context) {
+    _ContextService._context = context;
+  }
+  static getState(key) {
+    return _ContextService._context.globalState.get(key);
+  }
+  static async setState(key, value) {
+    return _ContextService._context.globalState.update(key, value);
+  }
+};
+
+// src/controller/user.controller.ts
+var UserController = class {
+  constructor() {
+  }
+  async saveUser(userInfo) {
+    await ContextService.setState("userInfo", JSON.stringify(userInfo));
+    return { success: true };
+  }
+  async getUser() {
+    return ContextService.getState("userInfo");
+  }
+  async clearUser() {
+    await ContextService.setState("userInfo", null);
+    return { success: true };
+  }
+};
+__decorateClass([
+  callable("saveUser")
+], UserController.prototype, "saveUser", 1);
+__decorateClass([
+  callable("getUser")
+], UserController.prototype, "getUser", 1);
+__decorateClass([
+  callable("clearUser")
+], UserController.prototype, "clearUser", 1);
+UserController = __decorateClass([
+  controller("User")
+], UserController);
+
 // src/controller/index.ts
-registerControllers([GitController]);
+registerControllers([GitController, AxiosController, UserController]);
 
 // node_modules/cec-client-server/dist/index.esm.js
 function uuid$1(len, radix = 62) {
@@ -62962,6 +63085,9 @@ function startInlineLoop(minDelay = 1e3, maxDelay = 2e3) {
   loop();
 }
 function activate(context) {
+  console.log("context :>> ", context);
+  ContextService.register(context);
+  console.log("context \u5DF2\u6CE8\u518C\u5230 ContextService");
   outputChannel = vscode5.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
   outputChannel.show(true);
@@ -63061,17 +63187,6 @@ function activate(context) {
       await scanBotFilesAndUpdate(reportViewProvider);
     })
   );
-  vscode5.workspace.onDidChangeWorkspaceFolders(async () => {
-    const folder = vscode5.workspace.workspaceFolders?.[0];
-    if (folder) {
-      postMessage({
-        type: Msg.VSCODE_PROJECT_CHANGE,
-        payload: {
-          cwd: folder.uri.fsPath
-        }
-      });
-    }
-  });
 }
 var InlineReportViewProvider = class {
   constructor(context) {
@@ -63147,7 +63262,6 @@ var InlineReportViewProvider = class {
       });
     }
     webview2.onDidReceiveMessage(async (message) => {
-      console.log("message :>> ", message);
       if (message.command === "coding.start") {
         const { maxGeneratedLines: maxGeneratedLines2, acceptRatio: acceptRatio2 } = message.params;
         vscode5.commands.executeCommand("coding.start", {

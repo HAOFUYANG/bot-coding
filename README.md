@@ -2,13 +2,11 @@
 
 ## 提供了 panel 界面将命令可视化，弱化了命令行的操作
 
-- 启动: `> Start Coding`
-- 停止: `> Stop Coding`
-
 ## 项目的通讯能力
 
 - 使用了 cec-client-server
 - 参考了https://juejin.cn/post/7325132202970136585#heading-11
+- 通过 tsyringe 做依赖注入容器
 
 ## 功能
 

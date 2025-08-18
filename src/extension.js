@@ -16,7 +16,7 @@ import {
 import "./controller";
 import { getControllers } from "cec-client-server/decorator";
 import { CecServer } from "cec-client-server";
-
+import { ContextService } from "@/service/context.service";
 let isGenerating = false;
 let targetEditor = null;
 let outputChannel = null;
@@ -208,8 +208,10 @@ function startInlineLoop(minDelay = 1000, maxDelay = 2000) {
 }
 
 function activate(context) {
+  ContextService.register(context);
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
+  // 把 ExtensionContext 注册到容器
   outputChannel.show(true);
 
   reportViewProvider = new InlineReportViewProvider(context);
@@ -404,6 +406,8 @@ class InlineReportViewProvider {
         webview.html = html;
 
         //注册通讯
+        // 手动实例化 Controller
+
         const { callables, subscribables } = getControllers();
         const cecServer = new CecServer(
           webview.postMessage.bind(webview),
@@ -420,7 +424,6 @@ class InlineReportViewProvider {
 
     //接受消息
     webview.onDidReceiveMessage(async (message) => {
-      console.log("message :>> ", message);
       //代码生成
       if (message.command === "coding.start") {
         const { maxGeneratedLines, acceptRatio } = message.params;

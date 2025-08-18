@@ -15,8 +15,6 @@ const msgReceiver: MsgReceiver = (handler) => {
 };
 const cecClient = new CecClient(msgSender, msgReceiver);
 export const useCall = <ReplyVal>(name: string, ...args: any[]) => {
-  console.log("name", name);
-  console.log("...args", ...args);
   return cecClient.call<ReplyVal>(name, ...args);
 };
 export const useSubscribe = (

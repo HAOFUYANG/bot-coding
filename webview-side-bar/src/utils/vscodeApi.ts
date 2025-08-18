@@ -14,8 +14,7 @@ export function getVscodeApi() {
     vscodeApiInstance = window.acquireVsCodeApi
       ? window.acquireVsCodeApi()
       : {
-          postMessage: (...args: any[]) =>
-            console.log("[发送postmessage]", ...args),
+          postMessage: (...args: any[]) => {},
           getState: () => null,
           setState: () => {},
         };

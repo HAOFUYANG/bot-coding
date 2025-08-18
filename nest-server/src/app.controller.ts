@@ -1,4 +1,11 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpException,
+  Post,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller('user')
@@ -13,5 +20,18 @@ export class AppController {
   @Post('getUserInfo')
   getUserInfo() {
     return this.appService.getUserInfo();
+  }
+
+  @Post('getSstList')
+  getSstList(@Body() body: any, @Headers() headers: any) {
+    //模拟异常
+    // throw new HttpException(
+    //   {
+    //     msg: '获取SST列表异常',
+    //     code: 999,
+    //   },
+    //   400,
+    // );
+    return this.appService.getSstList();
   }
 }

@@ -1,17 +1,32 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Input, Button, Select, message, Progress, Alert } from "antd";
-import { useGit } from "@/hooks/useGit";
-const { TextArea } = Input;
+import {
+  Input,
+  Button,
+  Select,
+  message,
+  Progress,
+  Alert,
+  Avatar,
+  List,
+  Typography,
+} from "antd";
+import { UserOutlined } from "@ant-design/icons";
 
+import Login from "./Login";
+import { useGit } from "@/hooks/useGit";
+import WorkspaceApi from "@/api/workspaceApi";
+import { useUser } from "@/hooks/useUser";
+
+const { TextArea } = Input;
+const { getUser } = useUser();
+const { Paragraph, Text } = Typography;
 const GitTab = () => {
+  //login
+  const [showLogin, setShowLogin] = useState(true);
+  const [user, setUser] = useState("");
+  //git工具
   const [remotes, setRemotes] = useState([]);
-  const [sstList, setSstList] = useState([
-    "R1234",
-    "R1111",
-    "R2222",
-    "R3333",
-    "R4444",
-  ]);
+  const [sstList, setSstList] = useState([]);
   const [selectedSst, setSelectedSst] = useState(null);
   const [selectedRemote, setSelectedRemote] = useState(null);
   const [commitMessage, setCommitMessage] = useState("");
@@ -22,37 +37,65 @@ const GitTab = () => {
   const remotesRef = useRef([]);
   const projectRef = useRef(null);
   const { getRemotesWithPath, commitAndPush, projectChange } = useGit();
+  //sst列表数据
+  const [svmList, setSvmList] = useState([
+    {
+      title: "Ant Design Title 1",
+    },
+    {
+      title: "Ant Design Title 2",
+    },
+  ]);
   const requestGitRemote = async () => {
     const { remotes: newRemotes, cwd } = await getRemotesWithPath();
     const uniqueRemotes = [...new Set(newRemotes)];
     remotesRef.current = uniqueRemotes;
     projectRef.current = cwd;
-    message.success("获取仓库列表成功!");
+    message.success("获取远程成功!");
     setProjectPath(cwd);
     setRemotes(uniqueRemotes);
     setSelectedRemote(uniqueRemotes[0]);
   };
 
-  useEffect(async () => {
-    //初始化做一次获取
-    requestGitRemote();
-    // });
-    // 订阅变更通知；收到后再拉数据
-    const unsubscribe = projectChange(async () => {
-      const { cwd } = await getRemotesWithPath();
-      console.log("cwd :>> ", cwd);
-      if (cwd !== projectRef.current) {
-        projectRef.current = cwd;
-        // 这里触发你的刷新逻辑
-        requestGitRemote();
-      }
-    });
-
-    return unsubscribe;
+  useEffect(() => {
+    (async () => {
+      await requestGitRemote();
+      const unsubscribe = projectChange(async () => {
+        const { cwd } = await getRemotesWithPath();
+        if (cwd !== projectRef.current) {
+          projectRef.current = cwd;
+          //获取远程
+          requestGitRemote();
+        }
+      });
+      return unsubscribe;
+    })();
   }, []);
-  const handleRefresh = () => {
-    requestGitRemote();
+  const handleLoginSuccess = async () => {
+    setShowLogin(false);
+    const result = await getUser();
+    const { username, session } = result;
+    setUser(username);
+    //登陆成功之后获取查询sst
+    getSstList();
   };
+  const getSstList = async () => {
+    try {
+      const { session } = await getUser();
+      let request = {};
+      const { code, data } = await WorkspaceApi.getSstList(request, session);
+      if (code === 0) {
+        setSstList(data);
+      }
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+  const handleRefresh = async () => {
+    requestGitRemote();
+    getSstList();
+  };
+
   //推送
   const onPush = async () => {
     try {
@@ -73,7 +116,6 @@ const GitTab = () => {
         setPushResult(err);
       }
     } catch (error) {
-      console.log("error :>> ", error);
       setProgress(0);
       message.error(error.message);
     } finally {
@@ -82,6 +124,21 @@ const GitTab = () => {
   };
   return (
     <div style={{ padding: 0 }}>
+      {showLogin ? (
+        <Login
+          onSuccess={() => {
+            handleLoginSuccess();
+          }}
+        />
+      ) : (
+        <div>
+          <Avatar
+            style={{ backgroundColor: "#87d068" }}
+            icon={<UserOutlined />}
+          />
+          <span style={{ marginLeft: 8 }}>Hi, {user}</span>
+        </div>
+      )}
       <div style={{ marginBottom: 12, textAlign: "right" }}>
         <Button type="primary" onClick={handleRefresh}>
           刷新
@@ -91,15 +148,11 @@ const GitTab = () => {
         style={{ width: "100%", marginBottom: 12 }}
         value={selectedSst}
         onChange={(val) => setSelectedSst(val)}
-        options={sstList.map((r) => ({ label: r, value: r }))}
+        options={sstList.map(({ sst, app, desc }) => ({
+          label: `${sst}-${app}-${desc}`,
+          value: sst,
+        }))}
         placeholder="选择sst"
-      />
-      <Select
-        style={{ width: "100%", marginBottom: 12 }}
-        value={selectedRemote}
-        onChange={(val) => setSelectedRemote(val)}
-        options={remotes.map((r) => ({ label: r, value: r }))}
-        placeholder="提交仓库选择"
       />
       <TextArea
         rows={4}
@@ -107,6 +160,13 @@ const GitTab = () => {
         value={commitMessage}
         onChange={(e) => setCommitMessage(e.target.value)}
         style={{ marginBottom: 12 }}
+      />
+      <Select
+        style={{ width: "100%", marginBottom: 12 }}
+        value={selectedRemote}
+        onChange={(val) => setSelectedRemote(val)}
+        options={remotes.map((r) => ({ label: r, value: r }))}
+        placeholder="提交仓库选择"
       />
       <Button type="primary" block loading={loading} onClick={onPush}>
         Commit & Push
@@ -117,6 +177,42 @@ const GitTab = () => {
         style={{ marginTop: 16 }}
       />
       {pushResult ? <Alert message={pushResult} type="error" showIcon /> : ""}
+      <List
+        size="small"
+        header={
+          <Text strong style={{ margin: 0 }}>
+            当前版本
+          </Text>
+        }
+        itemLayout="horizontal"
+        dataSource={svmList}
+        renderItem={(item, index) => (
+          <List.Item actions={[<a key="list-loadmore-edit">提测</a>]}>
+            <List.Item.Meta
+              title={<a href="">{item.title}</a>}
+              description="Ant Design, a design language for background applications, is refined by Ant UED Team"
+            />
+          </List.Item>
+        )}
+      />
+      <List
+        size="small"
+        header={
+          <Text strong style={{ margin: 0 }}>
+            sst对应版本
+          </Text>
+        }
+        itemLayout="horizontal"
+        dataSource={svmList}
+        renderItem={(item, index) => (
+          <List.Item>
+            <List.Item.Meta
+              title={<a href="">{item.title}</a>}
+              description="Ant Design, a design language for background applications, is refined by Ant UED Team"
+            />
+          </List.Item>
+        )}
+      />
     </div>
   );
 };

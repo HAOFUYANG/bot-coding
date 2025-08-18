@@ -11,6 +11,9 @@
   "categories": [
     "Other"
   ],
+  "enabledApiProposals": [
+    "extensionRuntime"
+  ],
   "activationEvents": [
     "onView:coder-view",
     "onCommand:coding.start",
@@ -74,12 +77,14 @@
   },
   "dependencies": {
     "@happy.cli/utils": "^1.0.8",
+    "axios": "^1.11.0",
     "cec-client-server": "^1.3.2",
     "ejs": "^3.1.10",
     "esbuild": "^0.25.8",
     "execa": "^9.5.2",
     "fs-extra": "^11.3.0",
     "path-exists": "^5.0.0",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.10.0"
   }
 }
