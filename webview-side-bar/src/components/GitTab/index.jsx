@@ -16,7 +16,7 @@ import Login from "./Login";
 import { useGit } from "@/hooks/useGit";
 import WorkspaceApi from "@/api/workspaceApi";
 import { useUser } from "@/hooks/useUser";
-
+import { useSession } from "@/hooks/useSession";
 const { TextArea } = Input;
 const { getUser } = useUser();
 const { Paragraph, Text } = Typography;
@@ -72,23 +72,25 @@ const GitTab = () => {
     })();
   }, []);
   const handleLoginSuccess = async () => {
-    setShowLogin(false);
-    const result = await getUser();
-    const { username, session } = result;
-    setUser(username);
-    //登陆成功之后获取查询sst
-    getSstList();
+    try {
+      setShowLogin(false);
+      const { username } = await getUser();
+      setUser(username);
+      //登陆成功之后获取查询sst
+      getSstList();
+    } catch (error) {}
   };
   const getSstList = async () => {
     try {
-      const { session } = await getUser();
+      const session = await useSession();
       let request = {};
       const { code, data } = await WorkspaceApi.getSstList(request, session);
       if (code === 0) {
         setSstList(data);
       }
     } catch (error) {
-      message.error(error.message);
+      console.log("error :>> ", error);
+      setShowLogin(true);
     }
   };
   const handleRefresh = async () => {

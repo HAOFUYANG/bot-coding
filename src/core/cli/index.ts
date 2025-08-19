@@ -4,7 +4,7 @@ import { downloadTemplate } from "./downloadTemplate";
 import { installTemplate } from "./installTemplate";
 import { postMessage, Msg } from "../Messager/index";
 import path from "path";
-const processStep = {
+const processStep: any = {
   STEP1: {
     current: 1,
     stepDetails: [
@@ -90,7 +90,7 @@ const processStep = {
     ],
   },
 };
-export const happyCliInit = async (message) => {
+export const happyCliInit = async (message: any) => {
   const { name, type, template } = message.params;
   try {
     //1.这对应了脚手架项目的第一步选择模版

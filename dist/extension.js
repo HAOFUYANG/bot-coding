@@ -28,6 +28,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i2 = decorators.length - 1, decorator; i2 >= 0; i2--)
@@ -40682,12 +40683,18 @@ var require_ejs = __commonJS({
   }
 });
 
-// src/extension.js
+// src/extension.ts
+var extension_exports = {};
+__export(extension_exports, {
+  activate: () => activate,
+  deactivate: () => deactivate
+});
+module.exports = __toCommonJS(extension_exports);
 var import_reflect_metadata2 = __toESM(require_Reflect());
 var vscode5 = __toESM(require("vscode"));
 var path11 = __toESM(require("path"));
 
-// src/utils/insertRandomSnippet.js
+// src/utils/insertRandomSnippet.ts
 var vscode = __toESM(require("vscode"));
 var snippets = [
   "// TODO: optimize this function",
@@ -40763,7 +40770,7 @@ ${random}`);
   });
 }
 
-// src/core/cli/index.js
+// src/core/cli/index.ts
 var vscode2 = __toESM(require("vscode"));
 
 // node_modules/@happy.cli/utils/lib/log.js
@@ -48182,7 +48189,7 @@ function getLatestVersion(npmName) {
   });
 }
 
-// src/core/cli/createTemplateByOptions.js
+// src/core/cli/createTemplateByOptions.ts
 var import_node_os3 = require("node:os");
 var import_node_path = __toESM(require("node:path"));
 var TEMP_HOME = ".happy-cli";
@@ -48222,7 +48229,11 @@ var ADD_TEMPLATE = [
 function makeTargetPath() {
   return import_node_path.default.resolve(`${(0, import_node_os3.homedir)()}/${TEMP_HOME}`, "addTemplate");
 }
-async function createTemplateByOptions({ name, type, template }) {
+async function createTemplateByOptions({
+  name,
+  type,
+  template
+}) {
   const selectedTemplate = ADD_TEMPLATE.find((tpl) => tpl.value === template);
   if (!selectedTemplate) {
     throw new Error(`\u6A21\u677F ${template} \u4E0D\u5B58\u5728`);
@@ -48238,7 +48249,7 @@ async function createTemplateByOptions({ name, type, template }) {
   };
 }
 
-// src/core/cli/downloadTemplate.js
+// src/core/cli/downloadTemplate.ts
 var import_node_path7 = __toESM(require("node:path"));
 
 // node_modules/path-exists/index.js
@@ -48252,7 +48263,7 @@ function pathExistsSync(path12) {
   }
 }
 
-// src/core/cli/downloadTemplate.js
+// src/core/cli/downloadTemplate.ts
 var import_fs_extra = __toESM(require_lib5());
 
 // node_modules/is-plain-obj/index.js
@@ -54764,7 +54775,7 @@ var {
   getCancelSignal: getCancelSignal2
 } = getIpcExport();
 
-// src/core/cli/downloadTemplate.js
+// src/core/cli/downloadTemplate.ts
 function getCacheDir(targetPath) {
   return import_node_path7.default.resolve(targetPath, "node_modules");
 }
@@ -54791,7 +54802,7 @@ async function downloadTemplate(selectedTemplate) {
   }
 }
 
-// src/core/cli/installTemplate.js
+// src/core/cli/installTemplate.ts
 var import_fs_extra2 = __toESM(require_lib5());
 var import_node_path9 = __toESM(require("node:path"));
 var import_ejs = __toESM(require_ejs());
@@ -61395,7 +61406,7 @@ var glob = Object.assign(glob_, {
 });
 glob.glob = glob;
 
-// src/core/cli/installTemplate.js
+// src/core/cli/installTemplate.ts
 function getCacheFilePath(targetPath, template) {
   return import_node_path9.default.resolve(targetPath, "node_modules", template.npmName, "template");
 }
@@ -61407,12 +61418,10 @@ function copyFile(targetPath, template, installDir) {
   });
 }
 async function installTemplate(selectedTemplate, baseDir) {
-  console.log("selectedTemplate :>> ", selectedTemplate);
   const force = true;
   const { targetPath, name, template } = selectedTemplate;
   import_fs_extra2.default.ensureDirSync(targetPath);
   const installDir = import_node_path9.default.resolve(`${baseDir}/${name}`);
-  console.log("installDir :>> ", installDir);
   if (pathExistsSync(installDir)) {
     if (!force) {
       console.error(`\u5F53\u524D\u76EE\u5F55\u4E0B\u5DF2\u7ECF\u5B58\u5728${installDir}\u6587\u4EF6\u5939`);
@@ -61427,7 +61436,7 @@ async function installTemplate(selectedTemplate, baseDir) {
   copyFile(targetPath, template, installDir);
 }
 
-// src/core/Messager/index.js
+// src/core/Messager/index.ts
 var Msg = {
   //脚手架初始化
   HAPPY_CLI_INIT: "happyCli.init",
@@ -61436,10 +61445,8 @@ var Msg = {
   //安装脚手架
   HAPPY_CLI_INSTALL_CLI: "happyCli.installHappyCli",
   //使用create-happy-app方式创建应用
-  HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
+  HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp"
   //Git相关
-  GIT_ACTIONS_GET_REMOTES_WITH_PATH: "gitActions.getRemotesWithPath",
-  GIT_ACTIONS_COMMIT_AND_PUSH: "gitActions.commitAndPush"
 };
 var webview = null;
 function setWebview(view) {
@@ -61453,7 +61460,7 @@ function postMessage(message) {
   }
 }
 
-// src/core/cli/index.js
+// src/core/cli/index.ts
 var import_path = __toESM(require("path"));
 var processStep = {
   STEP1: {
@@ -61586,7 +61593,7 @@ var happyCliInit = async (message) => {
   }
 };
 
-// src/utils/happyCliUtils.js
+// src/utils/happyCliUtils.ts
 var vscode3 = __toESM(require("vscode"));
 var import_child_process = require("child_process");
 function checkNodeVersion() {
@@ -62475,7 +62482,6 @@ var GitController = class {
     });
   }
   async commitAndPush(data) {
-    console.log("data :>> ", data);
     const { selectedSst, commitMessage, remoteName } = data;
     const cwd = vscode4.workspace.workspaceFolders?.[0].uri.fsPath;
     return new Promise((resolve, reject) => {
@@ -62483,9 +62489,6 @@ var GitController = class {
         `git add . && git commit -m "${selectedSst} msg:${commitMessage}" && git push ${remoteName} HEAD`,
         { cwd },
         (err, stdout, stderr) => {
-          console.log("err :>> ", err);
-          console.log("stdout :>> ", stdout);
-          console.log("stderr :>> ", stderr);
           resolve({ success: !err, err: err ? stdout : stderr });
         }
       );
@@ -62508,7 +62511,51 @@ GitController = __decorateClass([
   controller("Git")
 ], GitController);
 
+// src/service/context.service.ts
+var ContextService = class _ContextService {
+  static _context;
+  static register(context) {
+    _ContextService._context = context;
+  }
+  static getState(key) {
+    return _ContextService._context.globalState.get(key);
+  }
+  static async setState(key, value) {
+    return _ContextService._context.globalState.update(key, value);
+  }
+};
+
+// src/controller/user.controller.ts
+var UserController = class {
+  constructor() {
+  }
+  async saveUser(userInfo) {
+    await ContextService.setState("userInfo", JSON.stringify(userInfo));
+    return { success: true };
+  }
+  async getUser() {
+    return ContextService.getState("userInfo");
+  }
+  async clearUser() {
+    await ContextService.setState("userInfo", null);
+    return { success: true };
+  }
+};
+__decorateClass([
+  callable("saveUser")
+], UserController.prototype, "saveUser", 1);
+__decorateClass([
+  callable("getUser")
+], UserController.prototype, "getUser", 1);
+__decorateClass([
+  callable("clearUser")
+], UserController.prototype, "clearUser", 1);
+UserController = __decorateClass([
+  controller("User")
+], UserController);
+
 // src/service/axios.service.ts
+var userController = new UserController();
 var AxiosService = class {
   axiosInstance;
   constructor(defaults3 = {}) {
@@ -62521,12 +62568,12 @@ var AxiosService = class {
       (response) => {
         return response;
       },
-      (error) => {
+      async (error) => {
         if (error.response) {
           const status = error.response.status;
           console.log("error.response :>> ", error.response);
           if (status === 401) {
-            console.log("\u9700\u8981\u505A\u91CD\u65B0\u767B\u9646\u4E86");
+            userController.clearUser();
           }
         }
         return Promise.reject(error);
@@ -62589,49 +62636,6 @@ __decorateClass([
 AxiosController = __decorateClass([
   controller("Axios")
 ], AxiosController);
-
-// src/service/context.service.ts
-var ContextService = class _ContextService {
-  static _context;
-  static register(context) {
-    _ContextService._context = context;
-  }
-  static getState(key) {
-    return _ContextService._context.globalState.get(key);
-  }
-  static async setState(key, value) {
-    return _ContextService._context.globalState.update(key, value);
-  }
-};
-
-// src/controller/user.controller.ts
-var UserController = class {
-  constructor() {
-  }
-  async saveUser(userInfo) {
-    await ContextService.setState("userInfo", JSON.stringify(userInfo));
-    return { success: true };
-  }
-  async getUser() {
-    return ContextService.getState("userInfo");
-  }
-  async clearUser() {
-    await ContextService.setState("userInfo", null);
-    return { success: true };
-  }
-};
-__decorateClass([
-  callable("saveUser")
-], UserController.prototype, "saveUser", 1);
-__decorateClass([
-  callable("getUser")
-], UserController.prototype, "getUser", 1);
-__decorateClass([
-  callable("clearUser")
-], UserController.prototype, "clearUser", 1);
-UserController = __decorateClass([
-  controller("User")
-], UserController);
 
 // src/controller/index.ts
 registerControllers([GitController, AxiosController, UserController]);
@@ -62940,7 +62944,7 @@ var CecServer = class _CecServer {
   }
 };
 
-// src/extension.js
+// src/extension.ts
 var isGenerating = false;
 var targetEditor = null;
 var outputChannel = null;
@@ -62956,14 +62960,14 @@ async function triggerAndAcceptInline() {
     return;
   }
   if (targetEditor.document.lineCount >= maxGeneratedLines) {
-    outputChannel.appendLine(`code generation completed, max line reached.`);
+    outputChannel?.appendLine(`code generation completed, max line reached.`);
     isGenerating = false;
     stopInlineLoop();
     vscode5.window.showInformationMessage(
       `code generation completed, stop coding`
     );
     targetEditor.document.save().then(() => {
-      outputChannel.appendLine("save success");
+      outputChannel?.appendLine("save success");
     });
     return;
   }
@@ -62972,12 +62976,12 @@ async function triggerAndAcceptInline() {
       await targetEditor.edit((editBuilder) => {
         editBuilder.insert(targetEditor.selection.active, "const");
       });
-      outputChannel.appendLine("first trigger success");
+      outputChannel?.appendLine("first trigger success");
       hasInsertedTrigger = true;
     }
     const prevLineCount = targetEditor.document.lineCount;
     await vscode5.commands.executeCommand("editor.action.inlineSuggest.trigger");
-    outputChannel.appendLine("trigger inline suggestion");
+    outputChannel?.appendLine("trigger inline suggestion");
     const currentLineCount = targetEditor.document.lineCount;
     const generatedRatio = acceptedCount / currentLineCount;
     const shouldAccept = Math.random() < acceptRatio / 100 - generatedRatio;
@@ -62987,14 +62991,16 @@ async function triggerAndAcceptInline() {
         "editor.action.inlineSuggest.commit"
       );
       await targetEditor.document.save().then(() => {
-        outputChannel.appendLine(
+        outputChannel?.appendLine(
           "accept inline suggestion success and save once"
         );
       });
       didAccept = true;
     } else {
       await insertRandomSnippet(targetEditor);
-      outputChannel.appendLine("insert random code block instead of accepting");
+      outputChannel?.appendLine(
+        "insert random code block instead of accepting"
+      );
     }
     const newLineCount = targetEditor.document.lineCount;
     let addedContent = "";
@@ -63022,11 +63028,11 @@ async function triggerAndAcceptInline() {
     }
     await moveCursorToEndAndInsertNewLine(targetEditor);
     if (shouldTriggerOnEmptyLines(targetEditor, 3, 2)) {
-      outputChannel.appendLine("insert words for empty line to ");
+      outputChannel?.appendLine("insert words for empty line to ");
       await insertTriggerWord(targetEditor);
     }
   } catch (e2) {
-    outputChannel.appendLine(`[triggerAndAcceptInline] error: ${e2.message}`);
+    outputChannel?.appendLine(`[triggerAndAcceptInline] error: ${e2.message}`);
   }
 }
 async function moveCursorToEndAndInsertNewLine(editor) {
@@ -63085,9 +63091,7 @@ function startInlineLoop(minDelay = 1e3, maxDelay = 2e3) {
   loop();
 }
 function activate(context) {
-  console.log("context :>> ", context);
   ContextService.register(context);
-  console.log("context \u5DF2\u6CE8\u518C\u5230 ContextService");
   outputChannel = vscode5.window.createOutputChannel("InlineAutoGenerator");
   context.subscriptions.push(outputChannel);
   outputChannel.show(true);
@@ -63149,20 +63153,19 @@ function activate(context) {
         vscode5.window.showInformationMessage("doing nothing...");
         return;
       }
-      targetEditor.document.save().then(() => {
-        outputChannel.appendLine("save success!");
+      targetEditor?.document.save().then(() => {
+        outputChannel?.appendLine("save success!");
       });
       isGenerating = false;
       targetEditor = null;
       stopInlineLoop();
-      outputChannel.appendLine("stop inline generator success");
+      outputChannel?.appendLine("stop inline generator success");
       vscode5.window.showInformationMessage("stop inline generator success");
     })
   );
   context.subscriptions.push(
-    //预留一个命令的注册
     vscode5.commands.registerCommand("autoInlineGenerator.tab", async () => {
-      outputChannel.appendLine("=== \u8981\u5F00\u59CBtab\u4E86 ===");
+      outputChannel?.appendLine("=== \u8981\u5F00\u59CBtab\u4E86 ===");
       await vscode5.commands.executeCommand(
         "editor.action.inlineSuggest.commit"
       );
@@ -63180,20 +63183,24 @@ function activate(context) {
     })
   );
   context.subscriptions.push(
-    vscode5.commands.registerCommand("deleteBotFile", async (filePath) => {
-      const uri = vscode5.Uri.file(filePath);
-      await vscode5.workspace.fs.delete(uri);
-      vscode5.window.showInformationMessage(`\u6587\u4EF6\u5DF2\u5220\u9664: ${filePath}`);
-      await scanBotFilesAndUpdate(reportViewProvider);
-    })
+    vscode5.commands.registerCommand(
+      "deleteBotFile",
+      async (filePath) => {
+        const uri = vscode5.Uri.file(filePath);
+        await vscode5.workspace.fs.delete(uri);
+        vscode5.window.showInformationMessage(`\u6587\u4EF6\u5DF2\u5220\u9664: ${filePath}`);
+        await scanBotFilesAndUpdate(reportViewProvider);
+      }
+    )
   );
 }
 var InlineReportViewProvider = class {
+  _context;
+  _webviewView = null;
+  _webview;
   constructor(context) {
     this._context = context;
-    this._webviewView = null;
   }
-  //停止事件
   postGenerationStopped() {
     if (this._webview) {
       this._webview.postMessage({
@@ -63201,7 +63208,6 @@ var InlineReportViewProvider = class {
       });
     }
   }
-  //获取webviewView
   resolveWebviewView(webviewView) {
     this._webview = webviewView.webview;
     const mediaPath = vscode5.Uri.file(
@@ -63213,7 +63219,6 @@ var InlineReportViewProvider = class {
       enableScripts: true,
       localResourceRoots: [mediaPath]
     };
-    const isDevMode = process.env.NODE_ENV === "development";
     if (false) {
       webview2.html = `
    <!DOCTYPE html>
@@ -63234,7 +63239,7 @@ var InlineReportViewProvider = class {
   <iframe src="http://localhost:5173" style="width:100%; height:100%; border:none;"></iframe>
 </body>
 </html>
-  `;
+      `;
     } else {
       const htmlUri = vscode5.Uri.file(
         path11.join(this._context.extensionPath, "media", "index.html")
@@ -63303,7 +63308,6 @@ var InlineReportViewProvider = class {
       }
     });
   }
-  // 发送生成代码数据给 webview
   postUpdateMessage(data) {
     if (this._webview) {
       this._webview.postMessage({
@@ -63312,7 +63316,6 @@ var InlineReportViewProvider = class {
       });
     }
   }
-  // 发送当前项目的扫描数据
   postUpdateBotFiles(files) {
     if (this._webview) {
       this._webview.postMessage({
@@ -63338,10 +63341,11 @@ function deactivate() {
     reportViewProvider.postGenerationStopped();
   }
 }
-module.exports = {
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
   activate,
   deactivate
-};
+});
 /*! Bundled license information:
 
 reflect-metadata/Reflect.js:

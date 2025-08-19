@@ -70,6 +70,8 @@
     "package": "npm run build && vsce package"
   },
   "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.2.1",
     "@types/vscode": "^1.102.0",
     "@vscode/vsce": "^3.6.0",

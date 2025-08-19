@@ -5,7 +5,9 @@ import axios, {
   CreateAxiosDefaults,
   InternalAxiosRequestConfig,
 } from "axios";
+import { UserController } from "@/controller/user.controller";
 
+const userController = new UserController();
 export class AxiosService {
   private axiosInstance: AxiosInstance;
 
@@ -23,13 +25,14 @@ export class AxiosService {
       (response: AxiosResponse) => {
         return response;
       },
-      (error) => {
+      async (error) => {
         if (error.response) {
           const status = error.response.status;
           console.log("error.response :>> ", error.response);
           if (status === 401) {
             // 跳转登录页面
-            console.log("需要做重新登陆了");
+            // 插件端清理用户信息
+            userController.clearUser();
           }
         }
         return Promise.reject(error);

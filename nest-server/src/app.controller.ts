@@ -28,9 +28,9 @@ export class AppController {
     // throw new HttpException(
     //   {
     //     msg: '获取SST列表异常',
-    //     code: 999,
+    //     code: 401,
     //   },
-    //   400,
+    //   401,
     // );
     return this.appService.getSstList();
   }

@@ -44,7 +44,17 @@ function makeTargetPath() {
   return path.resolve(`${homedir()}/${TEMP_HOME}`, "addTemplate");
 }
 
-export async function createTemplateByOptions({ name, type, template }) {
+interface CreateTemplateOptions {
+  name: string;
+  type: string;
+  template: string;
+}
+
+export async function createTemplateByOptions({
+  name,
+  type,
+  template,
+}: CreateTemplateOptions) {
   const selectedTemplate = ADD_TEMPLATE.find((tpl) => tpl.value === template);
   if (!selectedTemplate) {
     throw new Error(`模板 ${template} 不存在`);

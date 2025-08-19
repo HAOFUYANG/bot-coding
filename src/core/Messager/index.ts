@@ -2,6 +2,8 @@
  * @description 这是插件统一的消息中心，用于和外部比如panel进行消息发送
  */
 
+import { Webview } from "vscode";
+
 //消息全部类型整合
 let Msg = {
   //脚手架初始化
@@ -13,15 +15,13 @@ let Msg = {
   //使用create-happy-app方式创建应用
   HAPPY_CLI_CREATE__APP: "happyCli.createHappyApp",
   //Git相关
-  GIT_ACTIONS_GET_REMOTES_WITH_PATH: "gitActions.getRemotesWithPath",
-  GIT_ACTIONS_COMMIT_AND_PUSH: "gitActions.commitAndPush",
 };
-let webview = null;
+let webview: any = null;
 
-function setWebview(view) {
+function setWebview(view: Webview) {
   webview = view;
 }
-function postMessage(message) {
+function postMessage(message: any) {
   if (webview) {
     webview.postMessage(message);
   } else {

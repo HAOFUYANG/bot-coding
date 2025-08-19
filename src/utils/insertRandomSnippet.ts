@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-const snippets = [
+const snippets: string[] = [
   "// TODO: optimize this function",
   "console.log('debug info');",
   "function helper(param) { return param * 2; }",
@@ -64,12 +64,12 @@ const snippets = [
   "fetch('/ping').then(r => r.text()).then(console.log);",
 ];
 
-async function insertRandomSnippet(editor) {
+async function insertRandomSnippet(editor: any) {
   const random = snippets[Math.floor(Math.random() * snippets.length)];
   const lastLine = editor.document.lineCount - 1;
   const lastLineLength = editor.document.lineAt(lastLine).text.length;
   const position = new vscode.Position(lastLine, lastLineLength);
-  await editor.edit((editBuilder) => {
+  await editor.edit((editBuilder: any) => {
     editBuilder.insert(position, `\n${random}`);
   });
 }

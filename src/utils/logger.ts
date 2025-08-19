@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-let outputChannel = null;
+let outputChannel: NonNullable<any> = null;
 
 function initLogger() {
   outputChannel = vscode.window.createOutputChannel("InlineAutoGenerator");
@@ -8,7 +8,7 @@ function initLogger() {
   return outputChannel;
 }
 
-function log(message) {
+function log(message: string) {
   if (outputChannel) {
     outputChannel.appendLine(message);
   }

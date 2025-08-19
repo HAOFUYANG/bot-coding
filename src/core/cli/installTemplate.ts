@@ -1,14 +1,13 @@
 import fse from "fs-extra";
 import path from "node:path";
-import ora from "ora";
 import { pathExistsSync } from "path-exists";
 import ejs from "ejs";
 import { glob } from "glob";
-function getCacheFilePath(targetPath, template) {
+function getCacheFilePath(targetPath: string, template: any) {
   return path.resolve(targetPath, "node_modules", template.npmName, "template");
 }
 // 获取插件路径
-function getPluginFilePath(targetPath, template) {
+function getPluginFilePath(targetPath: string, template: any) {
   return path.resolve(
     targetPath,
     "node_modules",
@@ -17,7 +16,7 @@ function getPluginFilePath(targetPath, template) {
     "index.js"
   );
 }
-function copyFile(targetPath, template, installDir) {
+function copyFile(targetPath: string, template: any, installDir: any) {
   //找到模版路径
   const originFile = getCacheFilePath(targetPath, template);
   // 获取文件夹文件信息
@@ -26,7 +25,12 @@ function copyFile(targetPath, template, installDir) {
     fse.copySync(`${originFile}/${file}`, `${installDir}/${file}`);
   });
 }
-async function ejsRender(targetPath, installDir, template, selectedTemplate) {
+async function ejsRender(
+  targetPath: string,
+  installDir: any,
+  template: any,
+  selectedTemplate: any
+) {
   const {
     template: { ignore },
     name,
@@ -63,7 +67,7 @@ async function ejsRender(targetPath, installDir, template, selectedTemplate) {
     );
   });
 }
-export async function installTemplate(selectedTemplate, baseDir) {
+export async function installTemplate(selectedTemplate: any, baseDir: string) {
   const force = true;
   const { targetPath, name, template } = selectedTemplate;
   fse.ensureDirSync(targetPath);
