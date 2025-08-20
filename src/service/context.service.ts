@@ -6,6 +6,12 @@ export class ContextService {
     ContextService._context = context;
   }
 
+  static getContext(): vscode.ExtensionContext {
+    if (!ContextService._context) {
+      throw new Error("ContextService未注册");
+    }
+    return ContextService._context;
+  }
   static getState<T>(key: string): T | undefined {
     return ContextService._context.globalState.get<T>(key);
   }

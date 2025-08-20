@@ -12,7 +12,7 @@ const columns = [
     title: "结束行",
     dataIndex: "newLineCount",
     key: "newLineCount",
-    width: 80,
+    width: 70,
   },
   { title: "内容", dataIndex: "content", key: "content" },
 ];
@@ -23,6 +23,7 @@ const LogTable = ({ data }) => (
     columns={columns}
     pagination={false}
     size="small"
+    scroll={{ x: "max-content" }}
     rowKey="index"
     className="mt-4"
   />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, use } from "react";
 import { Tabs, ConfigProvider, message, theme } from "antd";
 import {
   OrderedListOutlined,
@@ -14,7 +14,7 @@ import GitTab from "./components/GitTab/index";
 import "./style/antd.css";
 import { vscodeApi } from "./utils/message";
 const { darkAlgorithm, defaultSeed, getDesignToken } = theme;
-
+import { useCoding } from "@/hooks/useCoding";
 const getTokenWithVscodeTheme = () => {
   const bg =
     getComputedStyle(document.documentElement)
@@ -37,7 +37,7 @@ const getTokenWithVscodeTheme = () => {
 };
 
 const CodingBarragePanel = ({
-  acceptedContentDetails,
+  acceptDetails,
   botFiles,
   onOpenFile,
   onDeleteFile,
@@ -58,7 +58,7 @@ const CodingBarragePanel = ({
               <OrderedListOutlined /> 采纳日志
             </>
           ),
-          children: <LogTable data={acceptedContentDetails} />,
+          children: <LogTable data={acceptDetails} />,
         },
         {
           key: "FILE",
@@ -82,7 +82,15 @@ const CodingBarragePanel = ({
 );
 
 const App = () => {
-  const [acceptedContentDetails, setAcceptedContentDetails] = useState([]);
+  const {
+    startCoding,
+    stopCoding,
+    acceptDetails,
+    scanFile,
+    openFile,
+    deleteFile,
+  } = useCoding();
+
   const [botFiles, setBotFiles] = useState([]);
   const [maxLines, setMaxLines] = useState(100);
   const [acceptRatio, setAcceptRatio] = useState(25);
@@ -98,14 +106,7 @@ const App = () => {
   });
   useEffect(() => {
     const handler = (event) => {
-      const { type, acceptedContentDetails, botFiles } = event.data;
-      if (type === "UPDATE") {
-        setAcceptedContentDetails(acceptedContentDetails);
-      }
-      if (type === "BOT_FILES") {
-        setBotFiles(botFiles);
-        message.success("文件列表已更新");
-      }
+      const { type, botFiles } = event.data;
       if (type === "GENERATION_STOPPED") {
         setStartLoading(false);
         message.success("文件已生成");
@@ -115,18 +116,31 @@ const App = () => {
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  const handleConfirmSettings = () => {
+  const handleConfirmSettings = async () => {
     setStartLoading(true);
     setConfigModalVisible(false);
-    vscodeApi.postMessage({
-      command: "coding.start",
-      params: { maxGeneratedLines: maxLines, acceptRatio },
-    });
+    await startCoding({ maxGeneratedLines: maxLines, acceptRatio });
   };
 
-  const handleStopCoding = () => {
-    vscodeApi.postMessage({ command: "coding.stop" });
+  const handleStopCoding = async () => {
+    await stopCoding();
     setStartLoading(false);
+  };
+  const handleScanFile = async () => {
+    const fileList = await scanFile();
+    setBotFiles(fileList);
+  };
+  const handleOpenGenerateFile = async (file) => {
+    await openFile(file.path);
+  };
+  const handelDeleteGenerateFile = async (file) => {
+    const result = await deleteFile(file.path);
+    console.log("result :>> ", result);
+    if (result) {
+      message.success("删除成功");
+      //删除成功之后刷新列表
+      handleScanFile();
+    }
   };
   const handleSecretClick = () => {
     setClickCount((prev) => {
@@ -172,23 +186,12 @@ const App = () => {
       label: <>代码</>,
       children: (
         <CodingBarragePanel
-          acceptedContentDetails={acceptedContentDetails}
+          acceptDetails={acceptDetails}
           botFiles={botFiles}
-          onOpenFile={(file) =>
-            vscodeApi.postMessage({
-              command: "openBotFile",
-              path: file.path,
-            })
-          }
-          onDeleteFile={(file) =>
-            vscodeApi.postMessage({
-              command: "deleteBotFile",
-              path: file.path,
-            })
-          }
+          onOpenFile={(file) => handleOpenGenerateFile(file)}
+          onDeleteFile={(file) => handelDeleteGenerateFile(file)}
           onRefreshFile={() => {
-            vscodeApi.postMessage({ command: "scanBotFiles" });
-            message.info("正在扫描当前项目文件...");
+            handleScanFile();
           }}
           onStart={() => setConfigModalVisible(true)}
           onStop={handleStopCoding}
